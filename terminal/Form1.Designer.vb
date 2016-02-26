@@ -28,6 +28,7 @@ Partial Class Form1
         Me.btPOpen = New System.Windows.Forms.Button
         Me.btScanComPort = New System.Windows.Forms.Button
         Me.gbRxLog = New System.Windows.Forms.GroupBox
+        Me.btClearRxLog = New System.Windows.Forms.Button
         Me.tbLogRx = New System.Windows.Forms.TextBox
         Me.SerialPort1 = New System.IO.Ports.SerialPort(Me.components)
         Me.gbSetPortSpeed = New System.Windows.Forms.GroupBox
@@ -70,15 +71,14 @@ Partial Class Form1
         Me.btFileSend = New System.Windows.Forms.Button
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog
         Me.gbTxLog = New System.Windows.Forms.GroupBox
+        Me.btClearTxLog = New System.Windows.Forms.Button
         Me.tbLogTx = New System.Windows.Forms.TextBox
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip
         Me.tsslRxCounter = New System.Windows.Forms.ToolStripStatusLabel
         Me.tsslTxCounter = New System.Windows.Forms.ToolStripStatusLabel
         Me.tspbBar = New System.Windows.Forms.ToolStripProgressBar
-        Me.GroupBox2 = New System.Windows.Forms.GroupBox
+        Me.gbKey = New System.Windows.Forms.GroupBox
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
-        Me.btClearTxLog = New System.Windows.Forms.Button
-        Me.btClearRxLog = New System.Windows.Forms.Button
         Me.GroupBox1.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -91,7 +91,7 @@ Partial Class Form1
         Me.gbStringEnd.SuspendLayout()
         Me.gbTxLog.SuspendLayout()
         Me.StatusStrip1.SuspendLayout()
-        Me.GroupBox2.SuspendLayout()
+        Me.gbKey.SuspendLayout()
         Me.SuspendLayout()
         '
         'GroupBox1
@@ -142,6 +142,15 @@ Partial Class Form1
         Me.gbRxLog.TabIndex = 1
         Me.gbRxLog.TabStop = False
         Me.gbRxLog.Text = "Прием"
+        '
+        'btClearRxLog
+        '
+        Me.btClearRxLog.Location = New System.Drawing.Point(660, 0)
+        Me.btClearRxLog.Name = "btClearRxLog"
+        Me.btClearRxLog.Size = New System.Drawing.Size(75, 23)
+        Me.btClearRxLog.TabIndex = 2
+        Me.btClearRxLog.Text = "Очистка"
+        Me.btClearRxLog.UseVisualStyleBackColor = True
         '
         'tbLogRx
         '
@@ -417,6 +426,7 @@ Partial Class Form1
         'Timer1
         '
         Me.Timer1.Enabled = True
+        Me.Timer1.Interval = 50
         '
         'gbTx
         '
@@ -464,7 +474,7 @@ Partial Class Form1
         'rbTypeTxWhile
         '
         Me.rbTypeTxWhile.AutoSize = True
-        Me.rbTypeTxWhile.Location = New System.Drawing.Point(64, 14)
+        Me.rbTypeTxWhile.Location = New System.Drawing.Point(76, 14)
         Me.rbTypeTxWhile.Name = "rbTypeTxWhile"
         Me.rbTypeTxWhile.Size = New System.Drawing.Size(62, 17)
         Me.rbTypeTxWhile.TabIndex = 1
@@ -580,6 +590,15 @@ Partial Class Form1
         Me.gbTxLog.TabStop = False
         Me.gbTxLog.Text = "Передача"
         '
+        'btClearTxLog
+        '
+        Me.btClearTxLog.Location = New System.Drawing.Point(660, 0)
+        Me.btClearTxLog.Name = "btClearTxLog"
+        Me.btClearTxLog.Size = New System.Drawing.Size(75, 23)
+        Me.btClearTxLog.TabIndex = 1
+        Me.btClearTxLog.Text = "Очистка"
+        Me.btClearTxLog.UseVisualStyleBackColor = True
+        '
         'tbLogTx
         '
         Me.tbLogTx.Font = New System.Drawing.Font("Lucida Console", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(204, Byte))
@@ -593,67 +612,53 @@ Partial Class Form1
         'StatusStrip1
         '
         Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsslRxCounter, Me.tsslTxCounter, Me.tspbBar})
-        Me.StatusStrip1.Location = New System.Drawing.Point(0, 774)
+        Me.StatusStrip1.Location = New System.Drawing.Point(0, 772)
         Me.StatusStrip1.Name = "StatusStrip1"
-        Me.StatusStrip1.Size = New System.Drawing.Size(997, 22)
+        Me.StatusStrip1.Size = New System.Drawing.Size(997, 24)
         Me.StatusStrip1.TabIndex = 9
         Me.StatusStrip1.Text = "StatusStrip1"
         '
         'tsslRxCounter
         '
+        Me.tsslRxCounter.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
+        Me.tsslRxCounter.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslRxCounter.Name = "tsslRxCounter"
-        Me.tsslRxCounter.Size = New System.Drawing.Size(24, 17)
+        Me.tsslRxCounter.Size = New System.Drawing.Size(28, 19)
         Me.tsslRxCounter.Text = "RX:"
         '
         'tsslTxCounter
         '
+        Me.tsslTxCounter.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
+        Me.tsslTxCounter.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslTxCounter.Name = "tsslTxCounter"
-        Me.tsslTxCounter.Size = New System.Drawing.Size(24, 17)
+        Me.tsslTxCounter.Size = New System.Drawing.Size(28, 19)
         Me.tsslTxCounter.Text = "TX:"
         '
         'tspbBar
         '
         Me.tspbBar.Name = "tspbBar"
-        Me.tspbBar.Size = New System.Drawing.Size(100, 16)
+        Me.tspbBar.Size = New System.Drawing.Size(100, 18)
         '
-        'GroupBox2
+        'gbKey
         '
-        Me.GroupBox2.Controls.Add(Me.btSendString)
-        Me.GroupBox2.Controls.Add(Me.btFileSend)
-        Me.GroupBox2.Location = New System.Drawing.Point(789, 107)
-        Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(200, 150)
-        Me.GroupBox2.TabIndex = 10
-        Me.GroupBox2.TabStop = False
-        Me.GroupBox2.Text = "Передача"
+        Me.gbKey.Controls.Add(Me.btSendString)
+        Me.gbKey.Controls.Add(Me.btFileSend)
+        Me.gbKey.Location = New System.Drawing.Point(789, 107)
+        Me.gbKey.Name = "gbKey"
+        Me.gbKey.Size = New System.Drawing.Size(200, 150)
+        Me.gbKey.TabIndex = 10
+        Me.gbKey.TabStop = False
+        Me.gbKey.Text = "Передача"
         '
         'Timer2
         '
-        '
-        'btClearTxLog
-        '
-        Me.btClearTxLog.Location = New System.Drawing.Point(660, 0)
-        Me.btClearTxLog.Name = "btClearTxLog"
-        Me.btClearTxLog.Size = New System.Drawing.Size(75, 23)
-        Me.btClearTxLog.TabIndex = 1
-        Me.btClearTxLog.Text = "Очистка"
-        Me.btClearTxLog.UseVisualStyleBackColor = True
-        '
-        'btClearRxLog
-        '
-        Me.btClearRxLog.Location = New System.Drawing.Point(660, 0)
-        Me.btClearRxLog.Name = "btClearRxLog"
-        Me.btClearRxLog.Size = New System.Drawing.Size(75, 23)
-        Me.btClearRxLog.TabIndex = 2
-        Me.btClearRxLog.Text = "Очистка"
-        Me.btClearRxLog.UseVisualStyleBackColor = True
         '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(997, 796)
-        Me.Controls.Add(Me.GroupBox2)
+        Me.Controls.Add(Me.gbKey)
         Me.Controls.Add(Me.StatusStrip1)
         Me.Controls.Add(Me.gbTxLog)
         Me.Controls.Add(Me.gbTx)
@@ -666,7 +671,7 @@ Partial Class Form1
         Me.Controls.Add(Me.GroupBox1)
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал"
+        Me.Text = "Терминал v1.0a"
         Me.GroupBox1.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -690,7 +695,7 @@ Partial Class Form1
         Me.gbTxLog.PerformLayout()
         Me.StatusStrip1.ResumeLayout(False)
         Me.StatusStrip1.PerformLayout()
-        Me.GroupBox2.ResumeLayout(False)
+        Me.gbKey.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -746,7 +751,7 @@ Partial Class Form1
     Friend WithEvents tbTxDelay As System.Windows.Forms.TextBox
     Friend WithEvents rbTypeTxWhile As System.Windows.Forms.RadioButton
     Friend WithEvents rbTypeTx1 As System.Windows.Forms.RadioButton
-    Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
+    Friend WithEvents gbKey As System.Windows.Forms.GroupBox
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents Timer2 As System.Windows.Forms.Timer
     Friend WithEvents btClearTxLog As System.Windows.Forms.Button

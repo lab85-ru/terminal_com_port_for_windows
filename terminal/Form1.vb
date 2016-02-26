@@ -1,7 +1,13 @@
 ﻿Imports System
 Imports System.IO
 Imports System.IO.Ports
-Imports System.Threading
+
+'
+' Необходимо реализовать:
+' - передачу строки в нех кодировка как в фаре
+' - передачу символов при нажатии на кнопки в поле Txlog
+' - прием ESC последовательностей
+'
 
 
 Public Class Form1
@@ -54,18 +60,26 @@ Public Class Form1
     ' структура привязывает радиобутом к четности для упрощения поиска в массиве
     Structure parity_st
         Dim rb As RadioButton
-        Dim p As Parity
+        Dim p As String
     End Structure
 
     Dim rbParity_array() As parity_st ' массив четность
 
-
     Structure stopbit_st
         Dim rb As RadioButton
-        Dim s As StopBits
+        Dim s As String
     End Structure
 
     Dim rbStopBit_array() As stopbit_st
+    ' Win32 - API Parity
+    'N	Отсутствие проверки на четность.
+    'E	Проверка на четность.
+    'O	Проверка на нечетность.
+    'M	Марка.
+    'S	Пробел.
+
+
+    Dim f_log As FileStream             ' Лог файл
 
 
 
@@ -84,26 +98,25 @@ Public Class Form1
     Private Sub btPOpen_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btPOpen.Click
 
         Dim com_port_speed As String = ""
-        Dim com_port_parity As Parity
-        Dim com_port_stop_bit As StopBits
+        Dim com_port_parity As String = ""
+        Dim com_port_stop_bit As String = ""
         Dim st_p As parity_st
         Dim st_s As stopbit_st
         Dim i As RadioButton
+        Dim com_port_parameter As String = ""
 
         If cbPorts.SelectedItem <> "" And CPortStatus = port_status_e.close Then
 
             rx_counter_global = 0
             tx_counter_global = 0
 
-            SerialPort1.PortName = cbPorts.SelectedItem
-
             ' Определение текущей скорости и заносим в строку скорость
             For Each i In rbSpeed_array
                 If i.Checked = True Then
                     If i.Checked = True And rbSpeedNumer.Checked = True Then ' поле ввода скорости
-                        com_port_speed = tbPortSpeedNumer.Text
+                        com_port_speed = "baud=" + tbPortSpeedNumer.Text
                     Else
-                        com_port_speed = i.Text
+                        com_port_speed = "baud=" + i.Text
                     End If
                     Exit For
                 End If
@@ -125,16 +138,12 @@ Public Class Form1
                 End If
             Next
 
-
-            Try
-                SerialPort1.Parity = com_port_parity
-                SerialPort1.BaudRate = Int(com_port_speed)
-                SerialPort1.StopBits = com_port_stop_bit
-                SerialPort1.Open()
-            Catch ex As Exception
-                tbLogRx.AppendText("ОШИБКА: Открытия порта. " + ex.Message + vbCrLf)
+            ' "baud=115200 parity=N data=8 stop=1"
+            com_port_parameter = com_port_speed + com_port_parity + com_port_stop_bit
+            If ComPortInit(cbPorts.SelectedItem, com_port_parameter) = False Then
+                tbLogRx.AppendText("Ошибка: открытия порта.")
                 Exit Sub
-            End Try
+            End If
 
             CPortStatus = port_status_e.open
             btPOpen.Text = PORT_CLOSE
@@ -144,18 +153,26 @@ Public Class Form1
             gbSetPortStopBit.Enabled = False
             gbSetPortParity.Enabled = False
 
-            tbLogRx.AppendText("Порт Открыт." + vbCrLf)
+            gbTx.Enabled = True
+            gbKey.Enabled = True
+
+
+            tbLogRx.AppendText(vbCrLf + "Порт Открыт." + vbCrLf)
         ElseIf CPortStatus = port_status_e.open Then
-            SerialPort1.Close()
+            ComPortClose()
 
             ' Включаем меню даем выбрать
             gbSetPortSpeed.Enabled = True
             gbSetPortStopBit.Enabled = True
             gbSetPortParity.Enabled = True
 
+            gbTx.Enabled = False
+            gbKey.Enabled = False
+
+
             CPortStatus = port_status_e.close
             btPOpen.Text = PORT_OPEN
-            tbLogRx.AppendText("Порт закрыт." + vbCrLf)
+            tbLogRx.AppendText(vbCrLf + "Порт == закрыт ===." + vbCrLf)
         End If
     End Sub
 
@@ -188,30 +205,30 @@ Public Class Form1
         ' заносим в массив соотвествие четности и радиобутона
         ReDim rbParity_array(5)
         rbParity_array(0).rb = rbParityNo
-        rbParity_array(0).p = Parity.None
+        rbParity_array(0).p = " parity=N" ' N	Отсутствие проверки на четность.
 
         rbParity_array(1).rb = rbParityOdd
-        rbParity_array(1).p = Parity.Odd
+        rbParity_array(1).p = " parity=O" ' O	Проверка на нечетность.
 
         rbParity_array(2).rb = rbParityEven
-        rbParity_array(2).p = Parity.Even
+        rbParity_array(2).p = " parity=E" ' E	Проверка на четность
 
         rbParity_array(3).rb = rbParityMark
-        rbParity_array(3).p = Parity.Mark
+        rbParity_array(3).p = " parity=M" ' M	Марка.
 
         rbParity_array(4).rb = rbParitySpace
-        rbParity_array(4).p = Parity.Space
+        rbParity_array(4).p = " parity=S" ' S	Пробел.
 
         ' заносим в массив соотвествие стопового бита и радиобутона
         ReDim rbStopBit_array(3)
         rbStopBit_array(0).rb = rbStopBit1
-        rbStopBit_array(0).s = StopBits.One
+        rbStopBit_array(0).s = " stop=1"
 
         rbStopBit_array(1).rb = rbStopBit2
-        rbStopBit_array(1).s = StopBits.Two
+        rbStopBit_array(1).s = " stop=2"
 
         rbStopBit_array(2).rb = rbStopBit15
-        rbStopBit_array(2).s = StopBits.OnePointFive
+        rbStopBit_array(2).s = " stop=1.5"
 
         ReDim rbAddEndStr_array(4)
         rbAddEndStr_array(0).rb = rbAddStrEndClear
@@ -235,6 +252,19 @@ Public Class Form1
         rbTypeTx1.Checked = True
 
         btSendString.Text = SEND_STR_START
+
+        ' изменяет размер метки в строке статуса
+        tsslRxCounter.AutoSize = False
+        Dim slab As Size = New Size(100, tsslRxCounter.Size.Height)
+        tsslRxCounter.Size = slab
+
+        tsslTxCounter.AutoSize = False
+        slab = New Size(100, tsslRxCounter.Size.Height)
+        tsslTxCounter.Size = slab
+
+        gbTx.Enabled = False
+        gbKey.Enabled = False
+
     End Sub
 
     ' RX: Прием данных с порта
@@ -268,162 +298,110 @@ Public Class Form1
 
     End Sub
 
+    ' таймер настроен на 50 мс (при 100 мс - неуспевает принимать, теряются данные)
     Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
-        Dim ub As Byte        ' принятый байт
-        'Dim i As UInt32       ' счетчик по принятым байтам
-        Dim s As String = ""  ' строка в виде НЕХ
-        Dim s1 As String = "" ' строка в виде БИН
-        Const SL = 16         ' длинна строки
-        Dim sl_n As Integer   ' счетчик длинны строки
-        Dim sc As String      ' строка одного символа НЕХ
-        Dim sw As String = "" ' строка для сохранения в файл
-        Dim l_n As Integer    ' количество линий
-        'Dim l As Integer      ' счетчик линий
+        Dim ub As Byte            ' принятый байт
+        Dim s As String = ""      ' строка в виде НЕХ
+        Dim s1 As String = ""     ' строка в виде БИН
+        Dim s_out As String = ""  ' строка на вывод
+        Dim sl_n As Integer = 0   ' счетчик длинны строки
+        Dim sc As String = ""     ' строка одного символа НЕХ
+        Dim sw As String = ""     ' строка для сохранения в файл
+        Dim l_n As Integer = 0    ' количество линий
+        Dim l_n2 As Integer = 0   ' количество линий в строке (для расчета)
         Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
+        Dim din As UInt32     ' количество пришедших данных
 
-        Dim TStart1 As Date ' = Now
+        'Dim TStart1 As Date ' = Now
         'MsgBox(Now.Subtract(TStart).TotalMilliseconds.ToString & " ms", , "Замер производительности")
+        'l_n = tbLogRx.Lines.Count
+        'If l_n > LINES_MAX + 10 Then
+        'TStart1 = Now
+        'Del_Str(tbLogRx, LINES_MAX)
+        'tbLogTx.AppendText("1 " + Now.Subtract(TStart1).TotalMilliseconds.ToString & " ms" + vbCrLf)
+        'End If
 
+        ' ----- ПРИЕМ ДАННЫХ И ЗАНЕСЕНИЕ В КОЛЬЦЕВОЙ БУФЕР -----------
+        din = BUFIN_SIZE
+        ComPortRead(bufin, din)
 
-        If buf_rx_in = buf_rx_out Then ' Пусто нет данных выходим
+        rx_counter_global = rx_counter_global + din
+
+        If din = 0 Then ' Пусто нет данных выходим
             Exit Sub
         End If
 
+        ' Запись в лог файл Приема
+        If flag_write_log = True And din > 0 Then
+            f_log.Write(bufin, 0, din)
+        End If
+
+        ' --------- ОБРАБОТКА ПРИНЯТЫХ БАННЫХ -----------------
         If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
-            s = ""
-            s1 = ""
-            sl_n = 0
-
-            While buf_rx_in <> buf_rx_out
-
-                ub = buf_rx(buf_rx_out)
-                buf_rx_out = buf_rx_out + 1
-
-                rx_counter_global = rx_counter_global + 1
-
-                sw = sw + Chr(ub)
-
-                If buf_rx_out = BUF_RX_SIZE Then
-                    buf_rx_out = 0
-                End If
-
-                ' добавляем 0 с переди если в строке один символ 1 -> 01, 4 -> 04
-                sc = Hex(ub)
-                If Len(sc) = 1 Then
-                    sc = "0" + sc
-                End If
-                s = s + sc + " "
-
-                If ub <= &H1F And ub >= 0 Then
-                    ub = &H2E ' "."
-                End If
-                s1 = s1 + Chr(ub)
-
-                sl_n = sl_n + 1
-
-                If sl_n = SL Then
-                    tbLogRx.AppendText(s + "    " + s1 + vbCrLf)
-                    s = ""
-                    s1 = ""
-                    sl_n = 0
-
-                    l_n = tbLogRx.Lines.Count
-                    If l_n > LINES_MAX + 10 Then
-                        TStart1 = Now
-                        Del_Str(tbLogRx, LINES_MAX)
-                        tbLogTx.AppendText("1 " + Now.Subtract(TStart1).TotalMilliseconds.ToString & " ms" + vbCrLf)
-                    End If
-
-                End If
-
-            End While
-
-            If Len(s) > 0 Then ' если строка была короче SL символов, то выводим строку и в конец довадяем пробелы, т.е. выравниваем
-                tbLogRx.AppendText(s)
-                sc = ""
-                While sl_n <> SL
-                    sc = sc + "   "
-                    sl_n = sl_n + 1
-                End While
-
-                tbLogRx.AppendText(sc + "    " + s1 + vbCrLf)
-
-            End If
-
+            s_out = ConvArrayByteToHEX(bufin, din)
         Else                               ' ASCII ------------------------------------------------------------------
-            While buf_rx_out <> buf_rx_in
-                ub = buf_rx(buf_rx_out)
-                buf_rx_out = buf_rx_out + 1
-                rx_counter_global = rx_counter_global + 1
 
-                If buf_rx_out = BUF_RX_SIZE Then
-                    buf_rx_out = 0
-                End If
+            For i = 0 To din - 1
+                ub = bufin(i)
 
-                sw = sw + Chr(ub)
-
-                'If ub <= &H1F And ub >= 0 Then
                 If ub = 0 Then
                     ub = &H2E ' "."
-                    s = s + Chr(ub)
+                    s_out = s_out + Chr(ub)
                 Else
-                    s = s + Chr(ub)
+                    s_out = s_out + Chr(ub)
                 End If
-            End While
-            tbLogRx.AppendText(s)
 
+            Next
+
+        End If
+
+        If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
+            l_n = tbLogRx.Lines.Count
+            'l_n2 = Len(s_out) / (16 * 3 + 4 + 16) ' (16 * 3 + 4 + 16) - длинна 1 строки в HEX виде
+            'If l_n2 >= LINES_MAX Then ' количество линий в строке больше чем в тексбоксе, или количество линий в строке больше максимального числа линий
+            'tbLogTx.AppendText("11" + vbCrLf)
+            'tbLogRx.Clear()
+            'tbLogRx.AppendText(s_out)
+            'Else
+            'tbLogTx.AppendText("12" + vbCrLf)
+            tbLogRx.AppendText(s_out)
             l_n = tbLogRx.Lines.Count
             If l_n > LINES_MAX + 100 Then
                 Del_Str(tbLogRx, LINES_MAX)
             End If
+            'End If
 
+        Else ' ASCII ----------------------------------------------------------------------------------------------------------
+            l_n2 = Len(s_out)
+            'If l_n2 >= (16 * 3 + 4 + 16) * LINES_MAX Then ' количество символов в строке больше чем в тексбоксе
+            'tbLogTx.AppendText("21" + vbCrLf)
+            'tbLogRx.Clear()
+            'tbLogRx.AppendText(s_out)
+            'Else
+            'tbLogTx.AppendText("22" + vbCrLf)
+            tbLogRx.AppendText(s_out)
+            If l_n > LINES_MAX + 100 Then
+                Del_Str(tbLogRx, LINES_MAX)
+            End If
+            'End If
 
         End If
-
-        If flag_write_log = True And Len(sw) > 0 Then
-            Print(1, sw)
-        End If
-
-
-        'l_n = tbLogRx.Lines.Length ' количество линий
-
-        ' удаляем строки
-        'l_n = tbLogRx.Lines.Count
-
-        'tbLogTx.AppendText(Str(l_n) + vbCrLf)
-
-        'If l_n > LINES_MAX Then
-        'Dim newList As List(Of String) = tbLogRx.Lines.ToList
-        ' newList.RemoveAt(newList.Count - 1)
-        ' Remove the first line.  
-        ' newList.RemoveAt(0)
-
-        'For l = 0 To l_n - LINES_MAX
-        'newList.RemoveAt(0)        ' удаляем самую вернюю строку т.к. после удаления строки сдвигаются в верх
-        'Next
-        'tbLogRx.Clear()
-        'tbLogRx.Lines = newList.ToArray
-        'End If
 
         trx_count_update() ' обновление счетчиков TX RX в строке статуса
 
     End Sub
 
-
-
     ' смена состояния запись лог файла
     Private Sub cbLogFile_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cbLogFile.CheckedChanged
         Dim fname As String = ""
 
-        fname = CreateLogFileName()
-
         If cbLogFile.Checked = True Then
-            flag_write_log = 1
+            flag_write_log = True
             fname = CreateLogFileName()
-            FileOpen(1, fname, OpenMode.Output) ' Создает и открывает файл
+            f_log = New FileStream(fname, FileMode.CreateNew, FileAccess.Write)
         Else
-            flag_write_log = 0
-            FileClose(1)
+            flag_write_log = False
+            f_log.Close()
         End If
     End Sub
 
@@ -500,7 +478,8 @@ Public Class Form1
         ' копируем строку в промежуточный буфер
         buf_str_tx_n = 0
         For i = 1 To Len(s)
-            buf_str_tx(buf_str_tx_n) = Mid(tbStrSend.Text, i, 1)
+            c = Mid(tbStrSend.Text, i, 1)
+            buf_str_tx(buf_str_tx_n) = Convert.ToByte(c) '.g .Length GetBytes(  'Chr(AscW(Mid(tbStrSend.Text, i, 1))) 'Chr(AscW(Mid(tbStrSend.Text, i, 1)))
             buf_str_tx_n = buf_str_tx_n + 1
         Next
 
@@ -510,7 +489,7 @@ Public Class Form1
                 If Len(rba.s) <> 0 Then
                     For i = 1 To Len(rba.s)
                         c = Mid(rba.s, i, 1)
-                        buf_str_tx(buf_str_tx_n) = AscW(c)
+                        buf_str_tx(buf_str_tx_n) = Asc(c)
                         buf_str_tx_n = buf_str_tx_n + 1
                     Next
                 End If
@@ -519,27 +498,20 @@ Public Class Form1
         Next
 
         ' Вывод строки в виде HEX / TEXT
+        s = ""
         If cbPrintHex.Checked = True Then
-            s_hex = ""
-            s = ""
-            For i = 0 To buf_str_tx_n - 1 ' выводим строку в виде НЕХ -------------------------------------
-                s_hex = Hex(buf_str_tx(i))
-                If Len(s_hex) = 1 Then
-                    s_hex = "0" + s_hex
-                End If
-                s = s + " " + s_hex
-            Next
+            s = ConvArrayByteToHEX(buf_str_tx, buf_str_tx_n)
             tbLogTx.AppendText(s)
         Else
             For i = 0 To buf_str_tx_n - 1 ' выводим строку по символьно в поле ----------------------------
-                s_hex = Convert.ToString(buf_str_tx(i))
-                tbLogTx.AppendText(s_hex)
+                s = s + Convert.ToChar(buf_str_tx(i)) 'Convert.ToString(buf_str_tx(i))
             Next
+            tbLogTx.AppendText(s)
         End If
 
-        SerialPort1.Write(buf_str_tx, 0, buf_str_tx_n)
+        ComPortWrite(buf_str_tx, buf_str_tx_n)
 
-        rx_counter_global = rx_counter_global + buf_str_tx_n
+        tx_counter_global = tx_counter_global + buf_str_tx_n
         trx_count_update() ' обновление счетчиков TX RX в строке статуса
 
     End Sub
@@ -577,9 +549,7 @@ next_:
                 Exit Sub
             End If
 
-            SerialPort1.Write(buf, 0, res)
-
-            'Thread.Sleep(80)
+            ComPortWrite(buf, res)
 
             tx_counter_global = tx_counter_global + res
             trx_count_update() ' обновление счетчиков TX RX в строке статуса
@@ -639,5 +609,40 @@ next_:
     ' Очистка лога приема
     Private Sub btClearRxLog_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btClearRxLog.Click
         tbLogRx.Clear()
+    End Sub
+
+    ' Отправка в порт все нажатий на клавиатуре
+    Private Sub tbLogTx_KeyPress(ByVal sender As System.Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles tbLogTx.KeyPress
+        Dim s As String = ""
+        Dim k(2) As Byte
+
+        If CPortStatus = port_status_e.close Then
+            Exit Sub
+        End If
+
+        k(0) = Asc(e.KeyChar)
+
+        ' Вывод знака в виде HEX / TEXT
+        s = ""
+        If cbPrintHex.Checked = True Then
+            e.Handled = True ' поглощаем символ
+
+            s = Hex(k(0))
+            If Len(s) = 1 Then
+                s = " 0" + s
+            Else
+                s = " " + s
+            End If
+            tbLogTx.AppendText(s)
+        Else
+            ' не выводим т.к. итак символ будет в окне
+            'tbLogTx.AppendText(Chr(k(0)))
+        End If
+
+        ComPortWrite(k, 1)
+
+        tx_counter_global = tx_counter_global + 1
+        trx_count_update() ' обновление счетчиков TX RX в строке статуса
+
     End Sub
 End Class
