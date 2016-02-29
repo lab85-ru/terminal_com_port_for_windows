@@ -23,7 +23,7 @@ Partial Class Form1
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox
+        Me.gbPort = New System.Windows.Forms.GroupBox
         Me.cbPorts = New System.Windows.Forms.ComboBox
         Me.btPOpen = New System.Windows.Forms.Button
         Me.btScanComPort = New System.Windows.Forms.Button
@@ -79,7 +79,8 @@ Partial Class Form1
         Me.tspbBar = New System.Windows.Forms.ToolStripProgressBar
         Me.gbKey = New System.Windows.Forms.GroupBox
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
-        Me.GroupBox1.SuspendLayout()
+        Me.Timer3 = New System.Windows.Forms.Timer(Me.components)
+        Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
         Me.gbSetPortParity.SuspendLayout()
@@ -94,17 +95,17 @@ Partial Class Form1
         Me.gbKey.SuspendLayout()
         Me.SuspendLayout()
         '
-        'GroupBox1
+        'gbPort
         '
-        Me.GroupBox1.Controls.Add(Me.cbPorts)
-        Me.GroupBox1.Controls.Add(Me.btPOpen)
-        Me.GroupBox1.Controls.Add(Me.btScanComPort)
-        Me.GroupBox1.Location = New System.Drawing.Point(12, 6)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(76, 94)
-        Me.GroupBox1.TabIndex = 0
-        Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Настройки"
+        Me.gbPort.Controls.Add(Me.cbPorts)
+        Me.gbPort.Controls.Add(Me.btPOpen)
+        Me.gbPort.Controls.Add(Me.btScanComPort)
+        Me.gbPort.Location = New System.Drawing.Point(12, 6)
+        Me.gbPort.Name = "gbPort"
+        Me.gbPort.Size = New System.Drawing.Size(76, 94)
+        Me.gbPort.TabIndex = 0
+        Me.gbPort.TabStop = False
+        Me.gbPort.Text = "Порт"
         '
         'cbPorts
         '
@@ -559,18 +560,18 @@ Partial Class Form1
         '
         'btSendString
         '
-        Me.btSendString.Location = New System.Drawing.Point(115, 19)
+        Me.btSendString.Location = New System.Drawing.Point(109, 22)
         Me.btSendString.Name = "btSendString"
-        Me.btSendString.Size = New System.Drawing.Size(75, 23)
+        Me.btSendString.Size = New System.Drawing.Size(75, 40)
         Me.btSendString.TabIndex = 4
         Me.btSendString.Text = "Строка"
         Me.btSendString.UseVisualStyleBackColor = True
         '
         'btFileSend
         '
-        Me.btFileSend.Location = New System.Drawing.Point(6, 19)
+        Me.btFileSend.Location = New System.Drawing.Point(109, 82)
         Me.btFileSend.Name = "btFileSend"
-        Me.btFileSend.Size = New System.Drawing.Size(75, 23)
+        Me.btFileSend.Size = New System.Drawing.Size(75, 38)
         Me.btFileSend.TabIndex = 3
         Me.btFileSend.Text = "Файл"
         Me.btFileSend.UseVisualStyleBackColor = True
@@ -653,6 +654,9 @@ Partial Class Form1
         'Timer2
         '
         '
+        'Timer3
+        '
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -668,11 +672,13 @@ Partial Class Form1
         Me.Controls.Add(Me.gbSetPortParity)
         Me.Controls.Add(Me.gbSetPortSpeed)
         Me.Controls.Add(Me.gbRxLog)
-        Me.Controls.Add(Me.GroupBox1)
+        Me.Controls.Add(Me.gbPort)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
+        Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.0a"
-        Me.GroupBox1.ResumeLayout(False)
+        Me.Text = "Терминал v1.0.1a"
+        Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
         Me.gbSetPortSpeed.ResumeLayout(False)
@@ -700,7 +706,7 @@ Partial Class Form1
         Me.PerformLayout()
 
     End Sub
-    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents gbPort As System.Windows.Forms.GroupBox
     Friend WithEvents gbRxLog As System.Windows.Forms.GroupBox
     Friend WithEvents tbLogRx As System.Windows.Forms.TextBox
     Friend WithEvents btScanComPort As System.Windows.Forms.Button
@@ -756,5 +762,6 @@ Partial Class Form1
     Friend WithEvents Timer2 As System.Windows.Forms.Timer
     Friend WithEvents btClearTxLog As System.Windows.Forms.Button
     Friend WithEvents btClearRxLog As System.Windows.Forms.Button
+    Friend WithEvents Timer3 As System.Windows.Forms.Timer
 
 End Class

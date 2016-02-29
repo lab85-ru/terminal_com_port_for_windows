@@ -5,9 +5,9 @@ Imports System.IO.Ports
 '
 ' Необходимо реализовать:
 ' - передачу строки в нех кодировка как в фаре
-' - передачу символов при нажатии на кнопки в поле Txlog
+' + передачу символов при нажатии на кнопки в поле Txlog(кроме служебных)
 ' - прием ESC последовательностей
-'
+' + передача файла по таймеру (чтоб программа не повисала)
 
 
 Public Class Form1
@@ -17,6 +17,9 @@ Public Class Form1
 
     Const SEND_STR_START As String = "Послать"
     Const SEND_STR_STOP As String = "СТОП"
+
+    Const SEND_FILE_START As String = "Файл"
+    Const SEND_FILE_STOP As String = "СТОП"
 
     Const RX_COUNT_TXT As String = "RX: "
     Dim rx_counter_global As Long = 0     ' статистика, счетчик общего количества принятых байт
@@ -28,11 +31,16 @@ Public Class Form1
         close = 0
     End Enum
 
+    Dim com_port_speed As String = ""
+    Dim com_port_speed_int As Integer = 0 ' числовое значение скорости (для расчета, таймаута между передачами блоков)
+    Dim com_port_parity As String = ""
+    Dim com_port_stop_bit As String = ""
+
     ' Очередь
     Const BUF_RX_SIZE As UInt32 = 10 * 1024 * 1024   ' размер входного приемного буфера
-    Dim buf_rx_in As UInt32 = 0                 ' входной счетчик принятых байт в буфере
-    Dim buf_rx_out As UInt32 = 0                ' вЫходной счетчик принятых байт в буфере
-    Dim buf_rx(BUF_RX_SIZE) As Byte             ' сам приемный буфер
+    Dim buf_rx_in As UInt32 = 0                      ' входной счетчик принятых байт в буфере
+    Dim buf_rx_out As UInt32 = 0                     ' вЫходной счетчик принятых байт в буфере
+    Dim buf_rx(BUF_RX_SIZE) As Byte                  ' сам приемный буфер
 
     ' промежуточный линейный буфер для приема массива из порта
     Const BUFIN_SIZE = 1000
@@ -78,9 +86,20 @@ Public Class Form1
     'M	Марка.
     'S	Пробел.
 
-
     Dim f_log As FileStream             ' Лог файл
 
+    ' структура с информацией о передаваемом файле
+    Structure file_send_st
+        Dim fs As FileStream
+        Const BUF_SIZE = 1024
+        Dim buf() As Byte
+        Dim res As Integer
+        Dim f As IO.FileInfo
+        Dim file_size As Long
+        Dim file_count As Long
+    End Structure
+
+    Dim f_send_st As file_send_st
 
 
     Private Sub btScanComPort_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btScanComPort.Click
@@ -97,12 +116,9 @@ Public Class Form1
 
     Private Sub btPOpen_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btPOpen.Click
 
-        Dim com_port_speed As String = ""
-        Dim com_port_parity As String = ""
-        Dim com_port_stop_bit As String = ""
         Dim st_p As parity_st
         Dim st_s As stopbit_st
-        Dim i As RadioButton
+        Dim irb As RadioButton
         Dim com_port_parameter As String = ""
 
         If cbPorts.SelectedItem <> "" And CPortStatus = port_status_e.close Then
@@ -111,16 +127,24 @@ Public Class Form1
             tx_counter_global = 0
 
             ' Определение текущей скорости и заносим в строку скорость
-            For Each i In rbSpeed_array
-                If i.Checked = True Then
-                    If i.Checked = True And rbSpeedNumer.Checked = True Then ' поле ввода скорости
+            For Each irb In rbSpeed_array
+                If irb.Checked = True Then
+                    If irb.Checked = True And rbSpeedNumer.Checked = True Then ' поле ввода скорости
                         com_port_speed = "baud=" + tbPortSpeedNumer.Text
+                        com_port_speed_int = Val(tbPortSpeedNumer.Text)
                     Else
-                        com_port_speed = "baud=" + i.Text
+                        com_port_speed = "baud=" + irb.Text
+                        com_port_speed_int = Val(irb.Text)
                     End If
                     Exit For
                 End If
             Next
+
+            If com_port_speed_int = 0 Or (com_port_speed_int < 110 And com_port_speed_int > 256000) Then
+                MsgBox("ОШИБКА: Значение параметра скорость задано не верно !" + vbCrLf + "MIN=110 MAX=256000")
+                Exit Sub
+            End If
+
 
             ' определение четности
             For Each st_p In rbParity_array
@@ -264,6 +288,10 @@ Public Class Form1
 
         gbTx.Enabled = False
         gbKey.Enabled = False
+
+        ' настройка струкруры передачи файла
+        ReDim f_send_st.buf(file_send_st.BUF_SIZE)
+
 
     End Sub
 
@@ -451,6 +479,7 @@ Public Class Form1
                 gbStringEnd.Enabled = False
                 gbTypeTxStr.Enabled = False
                 tbStrSend.Enabled = False
+                btFileSend.Enabled = False
             Else
                 Timer2.Enabled = False
                 btSendString.Text = SEND_STR_START
@@ -458,6 +487,7 @@ Public Class Form1
                 gbStringEnd.Enabled = True
                 gbTypeTxStr.Enabled = True
                 tbStrSend.Enabled = True
+                btFileSend.Enabled = True
             End If
             
         Else
@@ -516,14 +546,25 @@ Public Class Form1
 
     End Sub
 
+
     Private Sub btFileSend_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btFileSend.Click
-        Dim fs As FileStream
-        Const BUF_SIZE = 1024
-        Dim buf(BUF_SIZE) As Byte
-        Dim res As Integer = 0
-        Dim f As IO.FileInfo
-        Dim file_size As Long = 0
-        Dim file_count As Long = 0
+        Dim t As Integer
+
+        If btFileSend.Text = SEND_FILE_STOP Then
+            Timer3.Enabled = False
+            btFileSend.Text = SEND_FILE_START
+
+            gbStringEnd.Enabled = True
+            gbTypeTxStr.Enabled = True
+            tbStrSend.Enabled = True
+            btSendString.Enabled = True
+
+            Exit Sub
+        End If
+
+        f_send_st.file_count = 0
+        f_send_st.file_size = 0
+        f_send_st.res = 0
 
         tspbBar.Value = 0
 
@@ -534,32 +575,35 @@ Public Class Form1
 
         If OpenFileDialog1.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
 
-            f = New IO.FileInfo(OpenFileDialog1.FileName)
-            file_size = f.Length   ' длинна файла нужна чтобы знать сколько всего байт передавать и расчитывать проценты
-            If file_size = 0 Then
+            f_send_st.f = New IO.FileInfo(OpenFileDialog1.FileName)
+            f_send_st.file_size = f_send_st.f.Length   ' длинна файла нужна чтобы знать сколько всего байт передавать и расчитывать проценты
+            If f_send_st.file_size = 0 Then
                 Exit Sub
             End If
 
-            fs = New FileStream(OpenFileDialog1.FileName, FileMode.Open, FileAccess.Read)
+            f_send_st.fs = New FileStream(OpenFileDialog1.FileName, FileMode.Open, FileAccess.Read)
 
-next_:
-            res = fs.Read(buf, 0, BUF_SIZE)
-
-            If res = 0 Then ' все передали выходим
+            If com_port_speed_int = 0 Then
+                MsgBox("ОШИБКА: com_port_speed_int = 0, Деление на ноль !")
                 Exit Sub
             End If
 
-            ComPortWrite(buf, res)
+            ' Расчет интервала передачи блока
+            t = (file_send_st.BUF_SIZE / (Val(com_port_speed_int) / 10)) * 1000
 
-            tx_counter_global = tx_counter_global + res
-            trx_count_update() ' обновление счетчиков TX RX в строке статуса
+            If t = 0 Then
+                t = 5
+            End If
 
-            file_count = file_count + res
+            Timer3.Interval = t
+            Timer3.Enabled = True
 
-            tspbBar.Value = file_count * 100 / file_size
+            gbStringEnd.Enabled = False
+            gbTypeTxStr.Enabled = False
+            tbStrSend.Enabled = False
+            btSendString.Enabled = False
 
-            GoTo next_
-
+            btFileSend.Text = SEND_FILE_STOP
         End If
 
     End Sub
@@ -643,6 +687,28 @@ next_:
 
         tx_counter_global = tx_counter_global + 1
         trx_count_update() ' обновление счетчиков TX RX в строке статуса
+
+    End Sub
+
+    ' Передача файла по таймеру
+    Private Sub Timer3_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer3.Tick
+
+        f_send_st.res = f_send_st.fs.Read(f_send_st.buf, 0, file_send_st.BUF_SIZE)
+
+        If f_send_st.res = 0 Then ' все передали выходим
+            Timer3.Enabled = False
+            btFileSend.Text = SEND_FILE_START
+            Exit Sub
+        End If
+
+        ComPortWrite(f_send_st.buf, f_send_st.res)
+
+        tx_counter_global = tx_counter_global + f_send_st.res
+        trx_count_update() ' обновление счетчиков TX RX в строке статуса
+
+        f_send_st.file_count = f_send_st.file_count + f_send_st.res
+
+        tspbBar.Value = f_send_st.file_count * 100 / f_send_st.file_size
 
     End Sub
 End Class
