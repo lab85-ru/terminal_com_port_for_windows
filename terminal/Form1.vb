@@ -338,26 +338,26 @@ Public Class Form1
         Dim l_n As Integer = 0    ' количество линий
         Dim l_n2 As Integer = 0   ' количество линий в строке (для расчета)
         Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
-        Dim din As UInt32     ' количество пришедших данных
+        Dim din As UInt32         ' количество пришедших данных
 
-        'Dim TStart1 As Date ' = Now
-        'MsgBox(Now.Subtract(TStart).TotalMilliseconds.ToString & " ms", , "Замер производительности")
-        'l_n = tbLogRx.Lines.Count
-        'If l_n > LINES_MAX + 10 Then
-        'TStart1 = Now
-        'Del_Str(tbLogRx, LINES_MAX)
-        'tbLogTx.AppendText("1 " + Now.Subtract(TStart1).TotalMilliseconds.ToString & " ms" + vbCrLf)
-        'End If
+        If CPortStatus = port_status_e.close Then
+            Exit Sub
+        End If
 
-        ' ----- ПРИЕМ ДАННЫХ И ЗАНЕСЕНИЕ В КОЛЬЦЕВОЙ БУФЕР -----------
+        ' времы выполнения
+        'Dim TStart As Date = Now
+        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & " ms" & vbCrLf)
+
+        ' ----- ПРИЕМ ДАННЫХ -----------
         din = BUFIN_SIZE
         ComPortRead(bufin, din)
-
-        rx_counter_global = rx_counter_global + din
+        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "RX ms" & vbCrLf)
 
         If din = 0 Then ' Пусто нет данных выходим
             Exit Sub
         End If
+
+        rx_counter_global = rx_counter_global + din
 
         ' Запись в лог файл Приема
         If flag_write_log = True And din > 0 Then
@@ -367,8 +367,8 @@ Public Class Form1
         ' --------- ОБРАБОТКА ПРИНЯТЫХ БАННЫХ -----------------
         If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
             s_out = ConvArrayByteToHEX(bufin, din)
-        Else                               ' ASCII ------------------------------------------------------------------
 
+        Else                               ' ASCII ------------------------------------------------------------------
             For i = 0 To din - 1
                 ub = bufin(i)
 
@@ -624,7 +624,8 @@ Public Class Form1
         ' удаляем строки
         l_n = tb.Lines.Count
 
-        tbLogTx.AppendText(Str(l_n) + vbCrLf)
+        ' Для отладки
+        'tbLogTx.AppendText(Str(l_n) + vbCrLf)
 
         If l_n > str_store Then
             Dim newList As List(Of String) = tb.Lines.ToList
@@ -698,10 +699,20 @@ Public Class Form1
         If f_send_st.res = 0 Then ' все передали выходим
             Timer3.Enabled = False
             btFileSend.Text = SEND_FILE_START
+
+            gbStringEnd.Enabled = True
+            gbTypeTxStr.Enabled = True
+            tbStrSend.Enabled = True
+            btSendString.Enabled = True
+
             Exit Sub
         End If
 
+        ' времы выполнения
+        'Dim TStart As Date = Now
+
         ComPortWrite(f_send_st.buf, f_send_st.res)
+        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "TX ms" & vbCrLf)
 
         tx_counter_global = tx_counter_global + f_send_st.res
         trx_count_update() ' обновление счетчиков TX RX в строке статуса

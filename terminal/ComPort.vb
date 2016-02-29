@@ -124,8 +124,8 @@ Module ComPort
         CtimeOut.ReadIntervalTimeout = 1 ' 20
         CtimeOut.ReadTotalTimeoutConstant = 1 ' 1
         CtimeOut.ReadTotalTimeoutMultiplier = 0
-        CtimeOut.WriteTotalTimeoutConstant = 1 ' 10
-        CtimeOut.WriteTotalTimeoutMultiplier = 0
+        CtimeOut.WriteTotalTimeoutConstant = 0 '0 '1 ' 10
+        CtimeOut.WriteTotalTimeoutMultiplier = 1 '1 '0
 
         retval = SetCommTimeouts(ComHandle, CtimeOut)
         If retval = -1 Then
