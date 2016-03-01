@@ -5,9 +5,8 @@ Imports System.IO.Ports
 '
 ' Необходимо реализовать:
 ' - передачу строки в нех кодировка как в фаре
-' + передачу символов при нажатии на кнопки в поле Txlog(кроме служебных)
 ' - прием ESC последовательностей
-' + передача файла по таймеру (чтоб программа не повисала)
+
 
 
 Public Class Form1
@@ -15,7 +14,7 @@ Public Class Form1
     Const PORT_OPEN As String = "Открыть"
     Const PORT_CLOSE As String = "Закрыть"
 
-    Const SEND_STR_START As String = "Послать"
+    Const SEND_STR_START As String = "Строка"
     Const SEND_STR_STOP As String = "СТОП"
 
     Const SEND_FILE_START As String = "Файл"
@@ -31,19 +30,12 @@ Public Class Form1
         close = 0
     End Enum
 
-    Dim com_port_speed As String = ""
     Dim com_port_speed_int As Integer = 0 ' числовое значение скорости (для расчета, таймаута между передачами блоков)
-    Dim com_port_parity As String = ""
-    Dim com_port_stop_bit As String = ""
-
-    ' Очередь
-    Const BUF_RX_SIZE As UInt32 = 10 * 1024 * 1024   ' размер входного приемного буфера
-    Dim buf_rx_in As UInt32 = 0                      ' входной счетчик принятых байт в буфере
-    Dim buf_rx_out As UInt32 = 0                     ' вЫходной счетчик принятых байт в буфере
-    Dim buf_rx(BUF_RX_SIZE) As Byte                  ' сам приемный буфер
+    Dim com_port_parity As UInt32
+    Dim com_port_stop_bit As UInt32
 
     ' промежуточный линейный буфер для приема массива из порта
-    Const BUFIN_SIZE = 1000
+    Const BUFIN_SIZE = 2048
     Dim bufin(BUFIN_SIZE) As Byte     ' промежуточный буфер
 
     Const BUF_STR_TX_SIZE = 128
@@ -68,23 +60,17 @@ Public Class Form1
     ' структура привязывает радиобутом к четности для упрощения поиска в массиве
     Structure parity_st
         Dim rb As RadioButton
-        Dim p As String
+        Dim p As UInt32
     End Structure
 
     Dim rbParity_array() As parity_st ' массив четность
 
     Structure stopbit_st
         Dim rb As RadioButton
-        Dim s As String
+        Dim s As UInt32
     End Structure
 
     Dim rbStopBit_array() As stopbit_st
-    ' Win32 - API Parity
-    'N	Отсутствие проверки на четность.
-    'E	Проверка на четность.
-    'O	Проверка на нечетность.
-    'M	Марка.
-    'S	Пробел.
 
     Dim f_log As FileStream             ' Лог файл
 
@@ -130,10 +116,8 @@ Public Class Form1
             For Each irb In rbSpeed_array
                 If irb.Checked = True Then
                     If irb.Checked = True And rbSpeedNumer.Checked = True Then ' поле ввода скорости
-                        com_port_speed = "baud=" + tbPortSpeedNumer.Text
                         com_port_speed_int = Val(tbPortSpeedNumer.Text)
                     Else
-                        com_port_speed = "baud=" + irb.Text
                         com_port_speed_int = Val(irb.Text)
                     End If
                     Exit For
@@ -162,10 +146,8 @@ Public Class Form1
                 End If
             Next
 
-            ' "baud=115200 parity=N data=8 stop=1"
-            com_port_parameter = com_port_speed + com_port_parity + com_port_stop_bit
-            If ComPortInit(cbPorts.SelectedItem, com_port_parameter) = False Then
-                tbLogRx.AppendText("Ошибка: открытия порта.")
+            If ComPortInit(cbPorts.SelectedItem, com_port_speed_int, com_port_parity, com_port_stop_bit) = False Then
+                tbLogRx.AppendText(vbCrLf + "Ошибка: открытия порта." + vbCrLf)
                 Exit Sub
             End If
 
@@ -229,30 +211,30 @@ Public Class Form1
         ' заносим в массив соотвествие четности и радиобутона
         ReDim rbParity_array(5)
         rbParity_array(0).rb = rbParityNo
-        rbParity_array(0).p = " parity=N" ' N	Отсутствие проверки на четность.
+        rbParity_array(0).p = NOPARITY
 
         rbParity_array(1).rb = rbParityOdd
-        rbParity_array(1).p = " parity=O" ' O	Проверка на нечетность.
+        rbParity_array(1).p = ODDPARITY
 
         rbParity_array(2).rb = rbParityEven
-        rbParity_array(2).p = " parity=E" ' E	Проверка на четность
+        rbParity_array(2).p = EVENPARITY
 
         rbParity_array(3).rb = rbParityMark
-        rbParity_array(3).p = " parity=M" ' M	Марка.
+        rbParity_array(3).p = MARKPARITY
 
         rbParity_array(4).rb = rbParitySpace
-        rbParity_array(4).p = " parity=S" ' S	Пробел.
+        rbParity_array(4).p = SPACEPARITY
 
         ' заносим в массив соотвествие стопового бита и радиобутона
         ReDim rbStopBit_array(3)
         rbStopBit_array(0).rb = rbStopBit1
-        rbStopBit_array(0).s = " stop=1"
+        rbStopBit_array(0).s = ONESTOPBIT
 
         rbStopBit_array(1).rb = rbStopBit2
-        rbStopBit_array(1).s = " stop=2"
+        rbStopBit_array(1).s = ONE5STOPBITS
 
         rbStopBit_array(2).rb = rbStopBit15
-        rbStopBit_array(2).s = " stop=1.5"
+        rbStopBit_array(2).s = TWOSTOPBITS
 
         ReDim rbAddEndStr_array(4)
         rbAddEndStr_array(0).rb = rbAddStrEndClear
@@ -295,38 +277,7 @@ Public Class Form1
 
     End Sub
 
-    ' RX: Прием данных с порта
-    Private Sub SerialPort1_DataReceived(ByVal sender As System.Object, ByVal e As System.IO.Ports.SerialDataReceivedEventArgs) Handles SerialPort1.DataReceived
-        Dim fr As UInt32      ' количество свободного места
-        Dim din As UInt32     ' количество пришедших данных
-        Dim din_c As UInt32 = 0
-
-        din = SerialPort1.Read(bufin, 0, SerialPort1.BytesToRead)
-
-        If buf_rx_in >= buf_rx_out Then
-            fr = BUF_RX_SIZE - buf_rx_in + buf_rx_out
-        Else
-            fr = buf_rx_out + buf_rx_in
-        End If
-
-        If fr > din + 1 Then
-
-            While din_c <> din
-                buf_rx(buf_rx_in) = bufin(din_c)
-                buf_rx_in = buf_rx_in + 1
-                din_c = din_c + 1
-
-                If buf_rx_in = BUF_RX_SIZE Then
-                    buf_rx_in = 0
-                End If
-            End While
-        Else
-            MsgBox("Ощибка:Переполнение приемного буффера.")
-        End If
-
-    End Sub
-
-    ' таймер настроен на 50 мс (при 100 мс - неуспевает принимать, теряются данные)
+    ' таймер настроен на 10 мс (при 100 мс - неуспевает принимать, теряются данные)
     Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
         Dim ub As Byte            ' принятый байт
         Dim s As String = ""      ' строка в виде НЕХ
@@ -356,6 +307,8 @@ Public Class Form1
         If din = 0 Then ' Пусто нет данных выходим
             Exit Sub
         End If
+
+        'tbLogTx.AppendText(Str(din) + vbCrLf)
 
         rx_counter_global = rx_counter_global + din
 
