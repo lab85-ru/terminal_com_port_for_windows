@@ -329,7 +329,11 @@ Public Class Form1
                     ub = &H2E ' "."
                     s_out = s_out + Chr(ub)
                 Else
-                    s_out = s_out + Chr(ub)
+                    If ub = &HD Then
+                        s_out = s_out + vbCrLf
+                    Else
+                        s_out = s_out + Chr(ub)
+                    End If
                 End If
 
             Next
@@ -609,7 +613,38 @@ Public Class Form1
         tbLogRx.Clear()
     End Sub
 
-    ' Отправка в порт все нажатий на клавиатуре
+    ' Передача файла по таймеру
+    Private Sub Timer3_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer3.Tick
+
+        f_send_st.res = f_send_st.fs.Read(f_send_st.buf, 0, file_send_st.BUF_SIZE)
+
+        If f_send_st.res = 0 Then ' все передали выходим
+            Timer3.Enabled = False
+            btFileSend.Text = SEND_FILE_START
+
+            gbStringEnd.Enabled = True
+            gbTypeTxStr.Enabled = True
+            tbStrSend.Enabled = True
+            btSendString.Enabled = True
+
+            Exit Sub
+        End If
+
+        ' времы выполнения
+        'Dim TStart As Date = Now
+
+        ComPortWrite(f_send_st.buf, f_send_st.res)
+        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "TX ms" & vbCrLf)
+
+        tx_counter_global = tx_counter_global + f_send_st.res
+        trx_count_update() ' обновление счетчиков TX RX в строке статуса
+
+        f_send_st.file_count = f_send_st.file_count + f_send_st.res
+
+        tspbBar.Value = f_send_st.file_count * 100 / f_send_st.file_size
+
+    End Sub
+    ' Отправка в порт всех нажатий на клавиатуре
     Private Sub tbLogTx_KeyPress(ByVal sender As System.Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles tbLogTx.KeyPress
         Dim s As String = ""
         Dim k(2) As Byte
@@ -644,35 +679,42 @@ Public Class Form1
 
     End Sub
 
-    ' Передача файла по таймеру
-    Private Sub Timer3_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer3.Tick
+    ' Обработка нажатий клавиш в окне приема
+    Private Sub tbLogRx_KeyPress(ByVal sender As System.Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles tbLogRx.KeyPress
+        Dim s As String = ""
+        Dim k(2) As Byte
 
-        f_send_st.res = f_send_st.fs.Read(f_send_st.buf, 0, file_send_st.BUF_SIZE)
-
-        If f_send_st.res = 0 Then ' все передали выходим
-            Timer3.Enabled = False
-            btFileSend.Text = SEND_FILE_START
-
-            gbStringEnd.Enabled = True
-            gbTypeTxStr.Enabled = True
-            tbStrSend.Enabled = True
-            btSendString.Enabled = True
-
+        If CPortStatus = port_status_e.close Then
             Exit Sub
         End If
 
-        ' времы выполнения
-        'Dim TStart As Date = Now
+        k(0) = Asc(e.KeyChar)
+        e.Handled = True ' поглощаем символ
 
-        ComPortWrite(f_send_st.buf, f_send_st.res)
-        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "TX ms" & vbCrLf)
+        ' Вывод знака в виде HEX / TEXT
+        s = ""
+        If cbPrintHex.Checked = True Then
+            'e.Handled = True ' поглощаем символ
 
-        tx_counter_global = tx_counter_global + f_send_st.res
+            s = Hex(k(0))
+            If Len(s) = 1 Then
+                s = " 0" + s
+            Else
+                s = " " + s
+            End If
+            tbLogTx.AppendText(s)
+        Else
+            ' выводим в окно передачи ! 
+            If k(0) = &HD Then
+                tbLogTx.AppendText(vbCrLf)
+            Else
+                tbLogTx.AppendText(Chr(k(0)))
+            End If
+        End If
+
+        ComPortWrite(k, 1)
+
+        tx_counter_global = tx_counter_global + 1
         trx_count_update() ' обновление счетчиков TX RX в строке статуса
-
-        f_send_st.file_count = f_send_st.file_count + f_send_st.res
-
-        tspbBar.Value = f_send_st.file_count * 100 / f_send_st.file_size
-
     End Sub
 End Class

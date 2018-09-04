@@ -164,9 +164,6 @@ Partial Class Form1
         Me.tbLogRx.Size = New System.Drawing.Size(760, 482)
         Me.tbLogRx.TabIndex = 0
         '
-        'SerialPort1
-        '
-        '
         'gbSetPortSpeed
         '
         Me.gbSetPortSpeed.Controls.Add(Me.rbSpeedNumer)
@@ -677,7 +674,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.0.3a"
+        Me.Text = "Терминал v1.1.0"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
