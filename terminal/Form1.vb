@@ -87,17 +87,28 @@ Public Class Form1
 
     Dim f_send_st As file_send_st
 
-
-    Private Sub btScanComPort_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btScanComPort.Click
-        Ports = SerialPort.GetPortNames
+    ' Поиск СОМ портов в системе
+    Sub find_com_port()
         Dim port As String
+        Const STR_TIRE = "--------------------------------------"
 
+        Ports = SerialPort.GetPortNames
         cbPorts.Items.Clear()
 
+        tbLogRx.AppendText(vbCrLf + STR_TIRE + vbCrLf)
+        tbLogRx.AppendText("Поиск доступных СОМ портов в системе:" + vbCrLf)
         For Each port In Ports
             tbLogRx.AppendText(port + vbCrLf)
             cbPorts.Items.Add(port)
         Next port
+        tbLogRx.AppendText(STR_TIRE + vbCrLf)
+
+        cbPorts.SelectedIndex = 0 ' Всегда выбираем самый первый порт, для заполнения поля а то ПУСТОЕ плохо смотриться
+
+    End Sub
+
+    Private Sub btScanComPort_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btScanComPort.Click
+        find_com_port()
     End Sub
 
     Private Sub btPOpen_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btPOpen.Click
@@ -154,6 +165,10 @@ Public Class Form1
             CPortStatus = port_status_e.open
             btPOpen.Text = PORT_CLOSE
 
+            rx_counter_global = 0 ' Сбрассываем счетчик принятых и переданных байт
+            tx_counter_global = 0
+
+
             ' Гасим меню недаем выбрать- пока не закроют порт
             gbSetPortSpeed.Enabled = False
             gbSetPortStopBit.Enabled = False
@@ -162,9 +177,11 @@ Public Class Form1
             gbTx.Enabled = True
             gbKey.Enabled = True
 
+            cbPorts.Enabled = False ' выключаем выбор номера порта
+
 
             tbLogRx.AppendText(vbCrLf + "Порт Открыт." + vbCrLf)
-        ElseIf CPortStatus = port_status_e.open Then
+        ElseIf CPortStatus = port_status_e.open Then ' Закрываем СОМ порт -------------------------------------
             ComPortClose()
 
             ' Включаем меню даем выбрать
@@ -172,9 +189,21 @@ Public Class Form1
             gbSetPortStopBit.Enabled = True
             gbSetPortParity.Enabled = True
 
-            gbTx.Enabled = False
+            gbTx.Enabled = False ' выключаем передача строки
             gbKey.Enabled = False
 
+            cbPorts.Enabled = True ' включаем выбор номера порта
+
+            Timer3.Enabled = False ' Выключам передачу файла - даже на посреди передачи
+            btFileSend.Text = SEND_FILE_START
+
+            Timer2.Enabled = False
+            btSendString.Text = SEND_STR_START ' Выключаем таймер переодической передачи строки
+            btSendString.Enabled = True
+            gbStringEnd.Enabled = True
+            gbTypeTxStr.Enabled = True
+            tbStrSend.Enabled = True
+            btFileSend.Enabled = True
 
             CPortStatus = port_status_e.close
             btPOpen.Text = PORT_OPEN
@@ -274,6 +303,7 @@ Public Class Form1
         ' настройка струкруры передачи файла
         ReDim f_send_st.buf(file_send_st.BUF_SIZE)
 
+        find_com_port() ' Производим поиск ком портов в системы
 
     End Sub
 
@@ -325,50 +355,43 @@ Public Class Form1
             For i = 0 To din - 1
                 ub = bufin(i)
 
-                If ub = 0 Then
-                    ub = &H2E ' "."
-                    s_out = s_out + Chr(ub)
-                Else
-                    If ub = &HD Then
-                        s_out = s_out + vbCrLf
-                    Else
+                Select Case ub
+                    Case &H0
+                        ub = &H2E ' за место кода 00 выводим точку "."
                         s_out = s_out + Chr(ub)
-                    End If
-                End If
 
-            Next
+                    Case &HD
+                        s_out = s_out + vbCrLf
+
+                    Case &HA
+                        If cb0D0A_one.Checked = True Then
+                            s_out = s_out + ""
+                        Else
+                            s_out = s_out + vbCrLf
+                        End If
+
+                    Case Else
+                        s_out = s_out + Chr(ub)
+                End Select
+
+            Next i
 
         End If
 
         If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
             l_n = tbLogRx.Lines.Count
-            'l_n2 = Len(s_out) / (16 * 3 + 4 + 16) ' (16 * 3 + 4 + 16) - длинна 1 строки в HEX виде
-            'If l_n2 >= LINES_MAX Then ' количество линий в строке больше чем в тексбоксе, или количество линий в строке больше максимального числа линий
-            'tbLogTx.AppendText("11" + vbCrLf)
-            'tbLogRx.Clear()
-            'tbLogRx.AppendText(s_out)
-            'Else
-            'tbLogTx.AppendText("12" + vbCrLf)
             tbLogRx.AppendText(s_out)
             l_n = tbLogRx.Lines.Count
             If l_n > LINES_MAX + 100 Then
                 Del_Str(tbLogRx, LINES_MAX)
             End If
-            'End If
 
         Else ' ASCII ----------------------------------------------------------------------------------------------------------
             l_n2 = Len(s_out)
-            'If l_n2 >= (16 * 3 + 4 + 16) * LINES_MAX Then ' количество символов в строке больше чем в тексбоксе
-            'tbLogTx.AppendText("21" + vbCrLf)
-            'tbLogRx.Clear()
-            'tbLogRx.AppendText(s_out)
-            'Else
-            'tbLogTx.AppendText("22" + vbCrLf)
             tbLogRx.AppendText(s_out)
             If l_n > LINES_MAX + 100 Then
                 Del_Str(tbLogRx, LINES_MAX)
             End If
-            'End If
 
         End If
 
@@ -376,7 +399,7 @@ Public Class Form1
 
     End Sub
 
-    ' смена состояния запись лог файла
+    ' Обработка смены состояния: запись лог файла
     Private Sub cbLogFile_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cbLogFile.CheckedChanged
         Dim fname As String = ""
 
@@ -390,7 +413,7 @@ Public Class Form1
         End If
     End Sub
 
-
+    ' Формируем имя файла для лога
     ' создает строку с текущей датой и расширением .log
     Function CreateLogFileName() As String
         Dim str As String
@@ -415,6 +438,7 @@ Public Class Form1
         CreateLogFileName = str
     End Function
 
+    ' Событие нажата кнопка перечачи строки в порт
     ' Передать строку
     Private Sub btSendString_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btSendString.Click
 
@@ -424,8 +448,10 @@ Public Class Form1
             If Timer2.Enabled = False Then
                 d = Val(tbTxDelay.Text)
                 If d = 0 Then
-                    d = 1
+                    tbLogRx.AppendText("ВНИМАНИЕ: Период = 0, будет установлен период = 10 секундам." + vbCrLf)
+                    d = 10000
                 ElseIf d > 10000 Then
+                    tbLogRx.AppendText("ВНИМАНИЕ: Период слишком большой, будет установлен период = 10 секундам." + vbCrLf)
                     d = 10000
                 End If
 
@@ -466,7 +492,7 @@ Public Class Form1
         buf_str_tx_n = 0
         For i = 1 To Len(s)
             c = Mid(tbStrSend.Text, i, 1)
-            buf_str_tx(buf_str_tx_n) = Convert.ToByte(c) '.g .Length GetBytes(  'Chr(AscW(Mid(tbStrSend.Text, i, 1))) 'Chr(AscW(Mid(tbStrSend.Text, i, 1)))
+            buf_str_tx(buf_str_tx_n) = Convert.ToByte(c)
             buf_str_tx_n = buf_str_tx_n + 1
         Next
 
@@ -491,7 +517,7 @@ Public Class Form1
             tbLogTx.AppendText(s)
         Else
             For i = 0 To buf_str_tx_n - 1 ' выводим строку по символьно в поле ----------------------------
-                s = s + Convert.ToChar(buf_str_tx(i)) 'Convert.ToString(buf_str_tx(i))
+                s = s + Convert.ToChar(buf_str_tx(i))
             Next
             tbLogTx.AppendText(s)
         End If
@@ -503,7 +529,7 @@ Public Class Form1
 
     End Sub
 
-
+    ' Передача файла
     Private Sub btFileSend_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btFileSend.Click
         Dim t As Integer
 
@@ -630,7 +656,7 @@ Public Class Form1
             Exit Sub
         End If
 
-        ' времы выполнения
+        ' время выполнения
         'Dim TStart As Date = Now
 
         ComPortWrite(f_send_st.buf, f_send_st.res)
@@ -644,6 +670,7 @@ Public Class Form1
         tspbBar.Value = f_send_st.file_count * 100 / f_send_st.file_size
 
     End Sub
+
     ' Отправка в порт всех нажатий на клавиатуре
     Private Sub tbLogTx_KeyPress(ByVal sender As System.Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles tbLogTx.KeyPress
         Dim s As String = ""
