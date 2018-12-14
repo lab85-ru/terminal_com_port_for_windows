@@ -23,6 +23,7 @@ Partial Class Form1
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
         Me.gbPort = New System.Windows.Forms.GroupBox
         Me.cbPorts = New System.Windows.Forms.ComboBox
         Me.btPOpen = New System.Windows.Forms.Button
@@ -57,6 +58,7 @@ Partial Class Form1
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.gbTx = New System.Windows.Forms.GroupBox
         Me.gbTypeTxStr = New System.Windows.Forms.GroupBox
+        Me.tbTxDelay = New System.Windows.Forms.MaskedTextBox
         Me.Label1 = New System.Windows.Forms.Label
         Me.rbTypeTxWhile = New System.Windows.Forms.RadioButton
         Me.rbTypeTx1 = New System.Windows.Forms.RadioButton
@@ -81,7 +83,6 @@ Partial Class Form1
         Me.Timer3 = New System.Windows.Forms.Timer(Me.components)
         Me.group_0d_0a = New System.Windows.Forms.GroupBox
         Me.cb0D0A_one = New System.Windows.Forms.CheckBox
-        Me.tbTxDelay = New System.Windows.Forms.MaskedTextBox
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -454,6 +455,16 @@ Partial Class Form1
         Me.gbTypeTxStr.TabStop = False
         Me.gbTypeTxStr.Text = "Сколько раз передавать"
         '
+        'tbTxDelay
+        '
+        Me.tbTxDelay.Location = New System.Drawing.Point(144, 13)
+        Me.tbTxDelay.Mask = "00000"
+        Me.tbTxDelay.Name = "tbTxDelay"
+        Me.tbTxDelay.Size = New System.Drawing.Size(40, 20)
+        Me.tbTxDelay.TabIndex = 4
+        Me.tbTxDelay.Text = "0"
+        Me.tbTxDelay.ValidatingType = GetType(Integer)
+        '
         'Label1
         '
         Me.Label1.AutoSize = True
@@ -670,16 +681,6 @@ Partial Class Form1
         Me.cb0D0A_one.Text = "Только 0x0D"
         Me.cb0D0A_one.UseVisualStyleBackColor = True
         '
-        'tbTxDelay
-        '
-        Me.tbTxDelay.Location = New System.Drawing.Point(144, 13)
-        Me.tbTxDelay.Mask = "00000"
-        Me.tbTxDelay.Name = "tbTxDelay"
-        Me.tbTxDelay.Size = New System.Drawing.Size(40, 20)
-        Me.tbTxDelay.TabIndex = 4
-        Me.tbTxDelay.Text = "0"
-        Me.tbTxDelay.ValidatingType = GetType(Integer)
-        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -698,6 +699,7 @@ Partial Class Form1
         Me.Controls.Add(Me.gbRxLog)
         Me.Controls.Add(Me.gbPort)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
