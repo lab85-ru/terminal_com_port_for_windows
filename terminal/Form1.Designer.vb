@@ -83,6 +83,7 @@ Partial Class Form1
         Me.Timer3 = New System.Windows.Forms.Timer(Me.components)
         Me.group_0d_0a = New System.Windows.Forms.GroupBox
         Me.cb0D0A_one = New System.Windows.Forms.CheckBox
+        Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -118,6 +119,7 @@ Partial Class Form1
         Me.cbPorts.Name = "cbPorts"
         Me.cbPorts.Size = New System.Drawing.Size(58, 21)
         Me.cbPorts.TabIndex = 2
+        Me.ToolTip1.SetToolTip(Me.cbPorts, "Выберите СОМ порт с которым собираетесь работать.")
         '
         'btPOpen
         '
@@ -126,6 +128,7 @@ Partial Class Form1
         Me.btPOpen.Size = New System.Drawing.Size(58, 23)
         Me.btPOpen.TabIndex = 1
         Me.btPOpen.Text = "Открыть"
+        Me.ToolTip1.SetToolTip(Me.btPOpen, "Открытие/Закрытие СОМ порта.")
         Me.btPOpen.UseVisualStyleBackColor = True
         '
         'btScanComPort
@@ -135,6 +138,8 @@ Partial Class Form1
         Me.btScanComPort.Size = New System.Drawing.Size(58, 23)
         Me.btScanComPort.TabIndex = 0
         Me.btScanComPort.Text = "Поиск"
+        Me.ToolTip1.SetToolTip(Me.btScanComPort, "Поиск СОМ портов в системе. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Вставили новый адаптер USB-TO-COM  произведите поис" & _
+                "к.")
         Me.btScanComPort.UseVisualStyleBackColor = True
         '
         'gbRxLog
@@ -155,6 +160,7 @@ Partial Class Form1
         Me.btClearRxLog.Size = New System.Drawing.Size(75, 23)
         Me.btClearRxLog.TabIndex = 2
         Me.btClearRxLog.Text = "Очистка"
+        Me.ToolTip1.SetToolTip(Me.btClearRxLog, "Очистка содержимого окна приема данных.")
         Me.btClearRxLog.UseVisualStyleBackColor = True
         '
         'tbLogRx
@@ -167,6 +173,9 @@ Partial Class Form1
         Me.tbLogRx.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.tbLogRx.Size = New System.Drawing.Size(760, 482)
         Me.tbLogRx.TabIndex = 0
+        Me.ToolTip1.SetToolTip(Me.tbLogRx, "Окно приема данных. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Все принимаемые символы выводятся в данном поле. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Если кур" & _
+                "сор находится в данном окне то все нажатые на " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "клавиатуре символы будут отправл" & _
+                "ятся в СОМ порт.")
         '
         'gbSetPortSpeed
         '
@@ -184,6 +193,7 @@ Partial Class Form1
         Me.gbSetPortSpeed.TabIndex = 2
         Me.gbSetPortSpeed.TabStop = False
         Me.gbSetPortSpeed.Text = "Скорость"
+        Me.ToolTip1.SetToolTip(Me.gbSetPortSpeed, "Установка скорости работы СОМ порта.")
         '
         'rbSpeedNumer
         '
@@ -403,6 +413,7 @@ Partial Class Form1
         Me.cbLogFile.Size = New System.Drawing.Size(112, 17)
         Me.cbLogFile.TabIndex = 0
         Me.cbLogFile.Text = "Записать в файл"
+        Me.ToolTip1.SetToolTip(Me.cbLogFile, "Запись всех принятых байт в файл (для последующего анализа)")
         Me.cbLogFile.UseVisualStyleBackColor = True
         '
         'gbPrint
@@ -423,6 +434,8 @@ Partial Class Form1
         Me.cbPrintHex.Size = New System.Drawing.Size(74, 17)
         Me.cbPrintHex.TabIndex = 0
         Me.cbPrintHex.Text = "ascii/HEX"
+        Me.ToolTip1.SetToolTip(Me.cbPrintHex, "Режим отображения принятых/передаваемых символов. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Ascii - как есть, HEX - в 16-" & _
+                "ричном виде.")
         Me.cbPrintHex.UseVisualStyleBackColor = True
         '
         'Timer1
@@ -463,6 +476,7 @@ Partial Class Form1
         Me.tbTxDelay.Size = New System.Drawing.Size(40, 20)
         Me.tbTxDelay.TabIndex = 4
         Me.tbTxDelay.Text = "0"
+        Me.ToolTip1.SetToolTip(Me.tbTxDelay, "Период повторения передачи строки.")
         Me.tbTxDelay.ValidatingType = GetType(Integer)
         '
         'Label1
@@ -483,6 +497,7 @@ Partial Class Form1
         Me.rbTypeTxWhile.TabIndex = 1
         Me.rbTypeTxWhile.TabStop = True
         Me.rbTypeTxWhile.Text = "Повтор"
+        Me.ToolTip1.SetToolTip(Me.rbTypeTxWhile, "Непрерывная передача строки.")
         Me.rbTypeTxWhile.UseVisualStyleBackColor = True
         '
         'rbTypeTx1
@@ -494,6 +509,7 @@ Partial Class Form1
         Me.rbTypeTx1.TabIndex = 0
         Me.rbTypeTx1.TabStop = True
         Me.rbTypeTx1.Text = "1 раз"
+        Me.ToolTip1.SetToolTip(Me.rbTypeTx1, "Передать строку 1 раз.")
         Me.rbTypeTx1.UseVisualStyleBackColor = True
         '
         'gbStringEnd
@@ -518,6 +534,7 @@ Partial Class Form1
         Me.rbAddStrEnd00.TabIndex = 3
         Me.rbAddStrEnd00.TabStop = True
         Me.rbAddStrEnd00.Text = "00"
+        Me.ToolTip1.SetToolTip(Me.rbAddStrEnd00, "Добавление в конец строки сода 0x00")
         Me.rbAddStrEnd00.UseVisualStyleBackColor = True
         '
         'rbAddStrEnd0D0A
@@ -529,6 +546,7 @@ Partial Class Form1
         Me.rbAddStrEnd0D0A.TabIndex = 2
         Me.rbAddStrEnd0D0A.TabStop = True
         Me.rbAddStrEnd0D0A.Text = "0D+0A"
+        Me.ToolTip1.SetToolTip(Me.rbAddStrEnd0D0A, "Добавление в конец строки сода 0x0D и 0x0A (перевод строки и новая строка)")
         Me.rbAddStrEnd0D0A.UseVisualStyleBackColor = True
         '
         'rbAddStrEnd0D
@@ -540,6 +558,7 @@ Partial Class Form1
         Me.rbAddStrEnd0D.TabIndex = 1
         Me.rbAddStrEnd0D.TabStop = True
         Me.rbAddStrEnd0D.Text = "0D"
+        Me.ToolTip1.SetToolTip(Me.rbAddStrEnd0D, "Добавление в конец строки сода 0x0D (перевод строки)")
         Me.rbAddStrEnd0D.UseVisualStyleBackColor = True
         '
         'rbAddStrEndClear
@@ -551,6 +570,7 @@ Partial Class Form1
         Me.rbAddStrEndClear.TabIndex = 0
         Me.rbAddStrEndClear.TabStop = True
         Me.rbAddStrEndClear.Text = "-"
+        Me.ToolTip1.SetToolTip(Me.rbAddStrEndClear, "Строка остается без изменений.")
         Me.rbAddStrEndClear.UseVisualStyleBackColor = True
         '
         'tbStrSend
@@ -559,6 +579,7 @@ Partial Class Form1
         Me.tbStrSend.Name = "tbStrSend"
         Me.tbStrSend.Size = New System.Drawing.Size(403, 20)
         Me.tbStrSend.TabIndex = 1
+        Me.ToolTip1.SetToolTip(Me.tbStrSend, "Поле ввода передаваемой строки.")
         '
         'btSendString
         '
@@ -567,6 +588,7 @@ Partial Class Form1
         Me.btSendString.Size = New System.Drawing.Size(75, 40)
         Me.btSendString.TabIndex = 4
         Me.btSendString.Text = "Строка"
+        Me.ToolTip1.SetToolTip(Me.btSendString, "Посылка строки в СОМ порт.")
         Me.btSendString.UseVisualStyleBackColor = True
         '
         'btFileSend
@@ -576,6 +598,8 @@ Partial Class Form1
         Me.btFileSend.Size = New System.Drawing.Size(75, 38)
         Me.btFileSend.TabIndex = 3
         Me.btFileSend.Text = "Файл"
+        Me.ToolTip1.SetToolTip(Me.btFileSend, "Посылка файла в СОМ порт. Дует открыто диалоговое окно в котором нужно будет выбр" & _
+                "ать файл.")
         Me.btFileSend.UseVisualStyleBackColor = True
         '
         'OpenFileDialog1
@@ -600,6 +624,7 @@ Partial Class Form1
         Me.btClearTxLog.Size = New System.Drawing.Size(75, 23)
         Me.btClearTxLog.TabIndex = 1
         Me.btClearTxLog.Text = "Очистка"
+        Me.ToolTip1.SetToolTip(Me.btClearTxLog, "Очистка содержимого окна передачи данных.")
         Me.btClearTxLog.UseVisualStyleBackColor = True
         '
         'tbLogTx
@@ -611,6 +636,8 @@ Partial Class Form1
         Me.tbLogTx.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.tbLogTx.Size = New System.Drawing.Size(757, 122)
         Me.tbLogTx.TabIndex = 0
+        Me.ToolTip1.SetToolTip(Me.tbLogTx, "Окно передачи. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Все отправляемые символы отображаются в данном поле. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Все нажат" & _
+                "ия на клавиатуре будут переданы в СОМ порт.")
         '
         'StatusStrip1
         '
@@ -679,6 +706,7 @@ Partial Class Form1
         Me.cb0D0A_one.Size = New System.Drawing.Size(91, 17)
         Me.cb0D0A_one.TabIndex = 0
         Me.cb0D0A_one.Text = "Только 0x0D"
+        Me.ToolTip1.SetToolTip(Me.cb0D0A_one, "Пропуск кода 0x0A. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Не выводит перевод строки от кода 0x0A.")
         Me.cb0D0A_one.UseVisualStyleBackColor = True
         '
         'Form1
@@ -703,7 +731,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.2.0"
+        Me.Text = "Терминал v1.2.1"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -793,5 +821,6 @@ Partial Class Form1
     Friend WithEvents group_0d_0a As System.Windows.Forms.GroupBox
     Friend WithEvents cb0D0A_one As System.Windows.Forms.CheckBox
     Friend WithEvents tbTxDelay As System.Windows.Forms.MaskedTextBox
+    Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
 
 End Class
