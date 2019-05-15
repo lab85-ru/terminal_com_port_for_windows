@@ -67,7 +67,6 @@ Partial Class Form1
         Me.rbAddStrEnd0D0A = New System.Windows.Forms.RadioButton
         Me.rbAddStrEnd0D = New System.Windows.Forms.RadioButton
         Me.rbAddStrEndClear = New System.Windows.Forms.RadioButton
-        Me.tbStrSend = New System.Windows.Forms.TextBox
         Me.btSendString = New System.Windows.Forms.Button
         Me.btFileSend = New System.Windows.Forms.Button
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog
@@ -84,6 +83,7 @@ Partial Class Form1
         Me.group_0d_0a = New System.Windows.Forms.GroupBox
         Me.cb0D0A_one = New System.Windows.Forms.CheckBox
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
+        Me.cbStrSend = New System.Windows.Forms.ComboBox
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -446,8 +446,8 @@ Partial Class Form1
         'gbTx
         '
         Me.gbTx.Controls.Add(Me.gbTypeTxStr)
+        Me.gbTx.Controls.Add(Me.cbStrSend)
         Me.gbTx.Controls.Add(Me.gbStringEnd)
-        Me.gbTx.Controls.Add(Me.tbStrSend)
         Me.gbTx.Location = New System.Drawing.Point(480, 12)
         Me.gbTx.Name = "gbTx"
         Me.gbTx.Size = New System.Drawing.Size(431, 90)
@@ -572,14 +572,6 @@ Partial Class Form1
         Me.rbAddStrEndClear.Text = "-"
         Me.ToolTip1.SetToolTip(Me.rbAddStrEndClear, "Строка остается без изменений.")
         Me.rbAddStrEndClear.UseVisualStyleBackColor = True
-        '
-        'tbStrSend
-        '
-        Me.tbStrSend.Location = New System.Drawing.Point(6, 59)
-        Me.tbStrSend.Name = "tbStrSend"
-        Me.tbStrSend.Size = New System.Drawing.Size(403, 20)
-        Me.tbStrSend.TabIndex = 1
-        Me.ToolTip1.SetToolTip(Me.tbStrSend, "Поле ввода передаваемой строки.")
         '
         'btSendString
         '
@@ -709,6 +701,14 @@ Partial Class Form1
         Me.ToolTip1.SetToolTip(Me.cb0D0A_one, "Пропуск кода 0x0A. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Не выводит перевод строки от кода 0x0A.")
         Me.cb0D0A_one.UseVisualStyleBackColor = True
         '
+        'cbStrSend
+        '
+        Me.cbStrSend.FormattingEnabled = True
+        Me.cbStrSend.Location = New System.Drawing.Point(6, 60)
+        Me.cbStrSend.Name = "cbStrSend"
+        Me.cbStrSend.Size = New System.Drawing.Size(403, 21)
+        Me.cbStrSend.TabIndex = 12
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -731,7 +731,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.2.1"
+        Me.Text = "Терминал v1.2.2"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -746,7 +746,6 @@ Partial Class Form1
         Me.gbPrint.ResumeLayout(False)
         Me.gbPrint.PerformLayout()
         Me.gbTx.ResumeLayout(False)
-        Me.gbTx.PerformLayout()
         Me.gbTypeTxStr.ResumeLayout(False)
         Me.gbTypeTxStr.PerformLayout()
         Me.gbStringEnd.ResumeLayout(False)
@@ -794,7 +793,6 @@ Partial Class Form1
     Friend WithEvents cbPrintHex As System.Windows.Forms.CheckBox
     Friend WithEvents Timer1 As System.Windows.Forms.Timer
     Friend WithEvents gbTx As System.Windows.Forms.GroupBox
-    Friend WithEvents tbStrSend As System.Windows.Forms.TextBox
     Friend WithEvents gbStringEnd As System.Windows.Forms.GroupBox
     Friend WithEvents btFileSend As System.Windows.Forms.Button
     Friend WithEvents rbAddStrEndClear As System.Windows.Forms.RadioButton
@@ -822,5 +820,6 @@ Partial Class Form1
     Friend WithEvents cb0D0A_one As System.Windows.Forms.CheckBox
     Friend WithEvents tbTxDelay As System.Windows.Forms.MaskedTextBox
     Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
+    Friend WithEvents cbStrSend As System.Windows.Forms.ComboBox
 
 End Class

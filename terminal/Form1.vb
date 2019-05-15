@@ -202,7 +202,7 @@ Public Class Form1
             btSendString.Enabled = True
             gbStringEnd.Enabled = True
             gbTypeTxStr.Enabled = True
-            tbStrSend.Enabled = True
+            cbStrSend.Enabled = True
             btFileSend.Enabled = True
 
             CPortStatus = port_status_e.close
@@ -445,6 +445,11 @@ Public Class Form1
 
         Dim d As Integer
 
+        ' добавляем строку в историю ввода если такой строки нет
+        If cbStrSend.FindString(cbStrSend.Text) = -1 Then
+            cbStrSend.Items.Add(cbStrSend.Text)
+        End If
+
         If rbTypeTxWhile.Checked = True Then ' циклическая передача
             If Timer2.Enabled = False Then
                 d = Val(tbTxDelay.Text)
@@ -462,7 +467,7 @@ Public Class Form1
 
                 gbStringEnd.Enabled = False
                 gbTypeTxStr.Enabled = False
-                tbStrSend.Enabled = False
+                cbStrSend.Enabled = False
                 btFileSend.Enabled = False
             Else
                 Timer2.Enabled = False
@@ -470,10 +475,10 @@ Public Class Form1
 
                 gbStringEnd.Enabled = True
                 gbTypeTxStr.Enabled = True
-                tbStrSend.Enabled = True
+                cbStrSend.Enabled = True
                 btFileSend.Enabled = True
             End If
-            
+
         Else
             TxString()
         End If
@@ -487,12 +492,12 @@ Public Class Form1
         Dim i As Integer
         Dim c As Char
 
-        s = tbStrSend.Text
+        s = cbStrSend.Text
 
         ' копируем строку в промежуточный буфер
         buf_str_tx_n = 0
         For i = 1 To Len(s)
-            c = Mid(tbStrSend.Text, i, 1)
+            c = Mid(cbStrSend.Text, i, 1)
             buf_str_tx(buf_str_tx_n) = Convert.ToByte(c)
             buf_str_tx_n = buf_str_tx_n + 1
         Next
@@ -541,7 +546,7 @@ Public Class Form1
 
             gbStringEnd.Enabled = True
             gbTypeTxStr.Enabled = True
-            tbStrSend.Enabled = True
+            cbStrSend.Enabled = True
             btSendString.Enabled = True
 
             Exit Sub
@@ -588,7 +593,7 @@ Public Class Form1
 
             gbStringEnd.Enabled = False
             gbTypeTxStr.Enabled = False
-            tbStrSend.Enabled = False
+            cbStrSend.Enabled = False
             btSendString.Enabled = False
 
             btFileSend.Text = SEND_FILE_STOP
@@ -656,7 +661,7 @@ Public Class Form1
 
             gbStringEnd.Enabled = True
             gbTypeTxStr.Enabled = True
-            tbStrSend.Enabled = True
+            cbStrSend.Enabled = True
             btSendString.Enabled = True
 
             Exit Sub
