@@ -535,6 +535,7 @@ Public Class Form1
         Dim t As Integer
 
         If btFileSend.Text = SEND_FILE_STOP Then
+            tbLogTx.AppendText(vbCrLf + "Передача файла остановлена..." + vbCrLf)
             Timer3.Enabled = False
             btFileSend.Text = SEND_FILE_START
 
@@ -552,7 +553,8 @@ Public Class Form1
 
         tspbBar.Value = 0
 
-        OpenFileDialog1.InitialDirectory = "c:\"
+        OpenFileDialog1.FileName = ""
+        OpenFileDialog1.InitialDirectory = "C:\"
         OpenFileDialog1.Filter = "All files (*.*)|*.*"
         OpenFileDialog1.FilterIndex = 2
         OpenFileDialog1.RestoreDirectory = True
@@ -566,6 +568,8 @@ Public Class Form1
             End If
 
             f_send_st.fs = New FileStream(OpenFileDialog1.FileName, FileMode.Open, FileAccess.Read)
+
+            tbLogTx.AppendText(vbCrLf + "Передача файла (размер = " + Str(f_send_st.file_size) + " байт) ..." + vbCrLf)
 
             If com_port_speed_int = 0 Then
                 MsgBox("ОШИБКА: com_port_speed_int = 0, Деление на ноль !")
@@ -646,6 +650,7 @@ Public Class Form1
         f_send_st.res = f_send_st.fs.Read(f_send_st.buf, 0, file_send_st.BUF_SIZE)
 
         If f_send_st.res = 0 Then ' все передали выходим
+            tbLogTx.AppendText(vbCrLf + "Передача файла закончена." + vbCrLf)
             Timer3.Enabled = False
             btFileSend.Text = SEND_FILE_START
 
@@ -745,4 +750,5 @@ Public Class Form1
         tx_counter_global = tx_counter_global + 1
         trx_count_update() ' обновление счетчиков TX RX в строке статуса
     End Sub
+
 End Class
