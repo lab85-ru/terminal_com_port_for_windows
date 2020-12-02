@@ -84,6 +84,12 @@ Public Class Form1
         Dim file_size As Long
         Dim file_count As Long
     End Structure
+    Enum avtomat_decoder_string_t
+        wait
+        hex
+        delay
+    End Enum
+
 
     Dim f_send_st As file_send_st
 
@@ -754,6 +760,266 @@ Public Class Form1
 
         tx_counter_global = tx_counter_global + 1
         trx_count_update() ' обновление счетчиков TX RX в строке статуса
+    End Sub
+    '--------------------------------------------------------------------------
+    ' Проигрыватель строки
+    '
+    ' 0..f - перевод в hex и передача в порт
+    ' >12345 - задержка в мс(пробел между > и числом не допускается)
+    '
+    ' 00 01 02 af b e -> 00 01 02 af 0b 0e 
+    ' >100 -> задержка 100 мс
+    ' >12345 -> задержка 12345 мс
+    '
+    '--------------------------------------------------------------------------
+    Public Sub decode_txt_hex_codes(ByVal s As String)
+
+        Dim c As Char ' символ из строки
+        Dim i As Integer = 1 ' индекс по входной строке
+
+        Dim delay_ms As UInteger ' задержка в мс, пересчет из delay_num
+        Dim delay_cnt As UInteger ' счетчик числа символов в delay_num
+        Dim delay_num(5) As Byte ' массив для сборки числа
+
+        Dim hex1, hex2 As Byte ' hex старший, младший байт
+        Dim send_byte As Byte ' байт для послылки в порт
+        Dim st As avtomat_decoder_string_t = avtomat_decoder_string_t.wait
+        Dim su As String = s.ToUpper
+        Dim ss As Char
+
+        ' накопительный буфер для формирования последовательности на передачу
+        Const TX_ARRAY_SIZE = 1024
+        Dim tx_array(TX_ARRAY_SIZE) As Byte
+        Dim tx_array_cnt As UInteger = 0
+
+        If s.Length = 0 Then
+            Exit Sub
+        End If
+
+        While i <> s.Length
+            ss = Mid(su, i, 1)
+            c = Convert.ToChar(ss)
+            i = i + 1
+
+            Select Case st
+                Case avtomat_decoder_string_t.wait
+                    If (c >= "0" And c <= "9") Or (c >= "A" And c <= "F") Then
+                        hex1 = Convert.ToByte(c)
+                        st = avtomat_decoder_string_t.hex
+                    ElseIf (c = ">") Then
+                        st = avtomat_decoder_string_t.delay
+                    End If
+
+                Case avtomat_decoder_string_t.hex
+                    If (c >= "0" And c <= "9") Or (c >= "A" And c <= "F") Then
+                        hex2 = Convert.ToByte(c)
+                        send_byte = build_hex(hex1, hex2)
+                        tx_array(tx_array_cnt) = send_byte
+                        tx_array_cnt = tx_array_cnt + 1
+                        'print_log(send_byte.ToString("X2") + " ")
+                        hex1 = 0
+                        hex2 = 0
+                        st = avtomat_decoder_string_t.wait
+                    ElseIf (c = ">") Then
+                        send_byte = build_hex(0, hex1)
+                        'print_log(send_byte.ToString("X2") + " ")
+                        tx_array(tx_array_cnt) = send_byte
+                        tx_array_cnt = tx_array_cnt + 1
+                        hex1 = 0
+                        hex2 = 0
+                        st = avtomat_decoder_string_t.delay
+                    Else
+                        send_byte = build_hex(0, hex1)
+                        'print_log(send_byte.ToString("X2") + " ")
+                        tx_array(tx_array_cnt) = send_byte
+                        tx_array_cnt = tx_array_cnt + 1
+                        hex1 = 0
+                        hex2 = 0
+                        st = avtomat_decoder_string_t.wait
+                    End If
+
+                Case avtomat_decoder_string_t.delay
+                    If (c >= "0" And c <= "9") Then
+                        If delay_cnt < 5 Then
+                            delay_num(delay_cnt) = Convert.ToByte(c)
+                            delay_cnt = delay_cnt + 1
+                        End If
+                    Else
+                        delay_ms = build_delay(delay_num, delay_cnt)
+                        print_log(vbCrLf + "Delay:" + Str(delay_ms) + vbCrLf)
+                        delay_cnt = 0
+
+                        Threading.Thread.Sleep(delay_ms)
+
+                        st = avtomat_decoder_string_t.wait
+                    End If
+
+            End Select
+
+            ' Передача массива при: переводе строки(построчная передача) или достижении максимального размера буфера
+            If ((c = vbCr Or c = vbLf) And tx_array_cnt <> 0) Or tx_array_cnt = TX_ARRAY_SIZE Then
+                SerialPort_data_send(tx_array, tx_array_cnt)
+                tx_array_cnt = 0
+            End If
+
+        End While
+
+    End Sub
+    '--------------------------------------------------------------------------
+    ' Проигрыванеи сценария из файла
+    ' Пример сценария:
+    '
+    ' 81 01 04 07 03 FF
+    ' > 100
+    ' 81 01 04 07 02 FF
+    '
+    ' Где:
+    ' 81 01 04 07 03 FF - значения байт в HEX формате отправляемыз в СОМ порт
+    ' > 100             - Формирование задержки 100 мс.
+    ' 81 01 04 07 02 FF - значения байт в HEX формате отправляемыз в СОМ порт
+    '
+    '
+    '--------------------------------------------------------------------------
+    Private Sub bt_Load_TXT_File_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles bt_Load_TXT_File.Click
+        OpenFileDialog1.FileName = ""
+        OpenFileDialog1.InitialDirectory = "." '    "C:\"
+        OpenFileDialog1.Filter = "All files (*.*)|*.*"
+        OpenFileDialog1.FilterIndex = 2
+        OpenFileDialog1.RestoreDirectory = True
+
+        ReDim f_send_st.buf(file_send_st.BUF_SIZE)
+
+        If OpenFileDialog1.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
+
+            cbPrintHex.Checked = True ' Включаем вывод в виде HEX иначе на прием будет выводиться в виде строки символов
+
+            f_send_st.f = New IO.FileInfo(OpenFileDialog1.FileName)
+            f_send_st.file_size = f_send_st.f.Length   ' длинна файла нужна чтобы знать сколько всего байт передавать и расчитывать проценты
+            If f_send_st.file_size = 0 Then
+                Exit Sub
+            End If
+
+            Dim fileReader As System.IO.StreamReader
+            fileReader = My.Computer.FileSystem.OpenTextFileReader(OpenFileDialog1.FileName)
+            Dim stringReader As String
+
+            If CPortStatus = port_status_e.close Then
+                print_log("Ошибка порт не открыт, СТОП ..." + vbCrLf)
+                Exit Sub
+            End If
+
+            print_log("Проигрывание сценария из файла..." + vbCrLf)
+            print_log("+++ СТАРТ ++++++++++++++++++++++++++++++++" + vbCrLf)
+            Do
+                stringReader = fileReader.ReadLine()
+                'print_log(stringReader + vbCrLf)
+
+                ' Добавили перевод строки, используется как разделитель т.к. алгоритм ожидает конец строки
+                ' а при чтении ReadLine - конец строки не поподает в строку
+                decode_txt_hex_codes(stringReader + vbCrLf)
+
+            Loop While stringReader <> Nothing ' .Length > 0
+
+            print_log("+++ СТОП +++++++++++++++++++++++++++++++++" + vbCrLf)
+
+            fileReader.Close()
+
+            'f_send_st.fs = New FileStream(OpenFileDialog1.FileName, FileMode.Open, FileAccess.Read)
+
+            'print_log(vbCrLf + "Загрузка файла (размер = " + Str(f_send_st.file_size) + " байт) ..." + vbCrLf)
+
+            'f_send_st.res = f_send_st.fs.Read(f_send_st.buf, 0, file_send_st.BUF_SIZE)
+            'print_log("Прочитали файл длинной = " + Str(f_send_st.res) + " байт" + vbCrLf)
+
+            'If CPortStatus = port_status_e.close Then
+            'print_log("Ошибка порт не открыт, СТОП ..." + vbCrLf)
+            'Exit Sub
+            'End If
+
+            'print_log("Проигрывание сценария из файла..." + vbCrLf)
+            'decode_txt_hex_codes(System.Text.Encoding.UTF8.GetString(f_send_st.buf))
+        End If
+
+    End Sub
+    '--------------------------------------------------------------------------
+    ' Вывод в окно лога + в файл
+    '--------------------------------------------------------------------------
+    Sub print_log(ByVal txt As String)
+
+        tbLogRx.AppendText(txt)
+
+        ' Запись в лог файл Приема
+        If flag_write_log = True And txt.Length > 0 Then
+            f_log.Write(System.Text.Encoding.Default.GetBytes(txt), 0, txt.Length)
+        End If
+
+    End Sub
+    '--------------------------------------------------------------------------
+    ' Преобразование символа в байт
+    '--------------------------------------------------------------------------
+    Function convert_char_to_byte(ByVal c As Byte) As Byte
+        Dim b As Byte
+
+        If (c >= Asc("0") And c <= Asc("9")) Then
+            b = c - &H30
+        ElseIf (c >= Asc("A") And c <= Asc("F")) Then
+            b = c - &H37
+        End If
+
+        Return b
+    End Function
+
+    '--------------------------------------------------------------------------
+    ' Преобразование пяти символов в число
+    '--------------------------------------------------------------------------
+    Function build_hex(ByVal h As Byte, ByVal l As Byte) As Byte
+        Dim bl, bh As Byte
+
+        bh = convert_char_to_byte(h) * 16
+        bl = convert_char_to_byte(l)
+
+        Return bh Or bl
+    End Function
+
+    '--------------------------------------------------------------------------
+    ' Преобразование двух символов в байт
+    '--------------------------------------------------------------------------
+    Function build_delay(ByVal array() As Byte, ByVal len As UInteger) As UInteger
+        Select Case len
+            Case 1
+                Return (array(0) - &H30)
+            Case 2
+                Return (array(0) - &H30) * 10 + (array(1) - &H30)
+            Case 3
+                Return (array(0) - &H30) * 100 + (array(1) - &H30) * 10 + (array(2) - &H30)
+            Case 4
+                Return (array(0) - &H30) * 1000 + (array(1) - &H30) * 100 + (array(2) - &H30) * 10 + (array(3) - &H30)
+            Case 5
+                Return (array(0) - &H30) * 10000 + (array(1) - &H30) * 1000 + (array(2) - &H30) * 100 + (array(3) - &H30) * 10 + (array(4) - &H30)
+            Case Else
+                Return 0
+        End Select
+    End Function
+    '--------------------------------------------------------------------------
+    ' Посылка пакета
+    '--------------------------------------------------------------------------
+    Sub SerialPort_data_send(ByVal data() As Byte, ByVal len As Integer)
+
+        Dim s As String = ""
+
+        If CPortStatus = port_status_e.close Then
+            print_log("Ошибка: Порт закрыт.")
+            Exit Sub
+        End If
+
+        ComPortWrite(data, len)
+
+        s = "TX:" + vbCrLf
+        print_log(s)
+
+        s = ConvArrayByteToHEX(data, len)
+        print_log(s)
+
     End Sub
 
 End Class

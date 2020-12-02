@@ -62,6 +62,7 @@ Partial Class Form1
         Me.Label1 = New System.Windows.Forms.Label
         Me.rbTypeTxWhile = New System.Windows.Forms.RadioButton
         Me.rbTypeTx1 = New System.Windows.Forms.RadioButton
+        Me.cbStrSend = New System.Windows.Forms.ComboBox
         Me.gbStringEnd = New System.Windows.Forms.GroupBox
         Me.rbAddStrEnd00 = New System.Windows.Forms.RadioButton
         Me.rbAddStrEnd0D0A = New System.Windows.Forms.RadioButton
@@ -83,7 +84,7 @@ Partial Class Form1
         Me.group_0d_0a = New System.Windows.Forms.GroupBox
         Me.cb0D0A_one = New System.Windows.Forms.CheckBox
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
-        Me.cbStrSend = New System.Windows.Forms.ComboBox
+        Me.bt_Load_TXT_File = New System.Windows.Forms.Button
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -512,6 +513,14 @@ Partial Class Form1
         Me.ToolTip1.SetToolTip(Me.rbTypeTx1, "Передать строку 1 раз.")
         Me.rbTypeTx1.UseVisualStyleBackColor = True
         '
+        'cbStrSend
+        '
+        Me.cbStrSend.FormattingEnabled = True
+        Me.cbStrSend.Location = New System.Drawing.Point(6, 60)
+        Me.cbStrSend.Name = "cbStrSend"
+        Me.cbStrSend.Size = New System.Drawing.Size(403, 21)
+        Me.cbStrSend.TabIndex = 12
+        '
         'gbStringEnd
         '
         Me.gbStringEnd.Controls.Add(Me.rbAddStrEnd00)
@@ -575,9 +584,9 @@ Partial Class Form1
         '
         'btSendString
         '
-        Me.btSendString.Location = New System.Drawing.Point(25, 28)
+        Me.btSendString.Location = New System.Drawing.Point(25, 18)
         Me.btSendString.Name = "btSendString"
-        Me.btSendString.Size = New System.Drawing.Size(75, 40)
+        Me.btSendString.Size = New System.Drawing.Size(75, 34)
         Me.btSendString.TabIndex = 4
         Me.btSendString.Text = "Строка"
         Me.ToolTip1.SetToolTip(Me.btSendString, "Посылка строки в СОМ порт.")
@@ -585,13 +594,13 @@ Partial Class Form1
         '
         'btFileSend
         '
-        Me.btFileSend.Location = New System.Drawing.Point(25, 102)
+        Me.btFileSend.Location = New System.Drawing.Point(25, 58)
         Me.btFileSend.Name = "btFileSend"
         Me.btFileSend.Size = New System.Drawing.Size(75, 38)
         Me.btFileSend.TabIndex = 3
         Me.btFileSend.Text = "Файл"
-        Me.ToolTip1.SetToolTip(Me.btFileSend, "Посылка файла в СОМ порт. Дует открыто диалоговое окно в котором нужно будет выбр" & _
-                "ать файл.")
+        Me.ToolTip1.SetToolTip(Me.btFileSend, "Посылка файла в СОМ порт. Будет открыто диалоговое окно в котором нужно будет выб" & _
+                "рать файл.")
         Me.btFileSend.UseVisualStyleBackColor = True
         '
         'OpenFileDialog1
@@ -663,6 +672,7 @@ Partial Class Form1
         '
         'gbKey
         '
+        Me.gbKey.Controls.Add(Me.bt_Load_TXT_File)
         Me.gbKey.Controls.Add(Me.btSendString)
         Me.gbKey.Controls.Add(Me.btFileSend)
         Me.gbKey.Location = New System.Drawing.Point(789, 108)
@@ -701,13 +711,16 @@ Partial Class Form1
         Me.ToolTip1.SetToolTip(Me.cb0D0A_one, "Пропуск кода 0x0A. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Не выводит перевод строки от кода 0x0A.")
         Me.cb0D0A_one.UseVisualStyleBackColor = True
         '
-        'cbStrSend
+        'bt_Load_TXT_File
         '
-        Me.cbStrSend.FormattingEnabled = True
-        Me.cbStrSend.Location = New System.Drawing.Point(6, 60)
-        Me.cbStrSend.Name = "cbStrSend"
-        Me.cbStrSend.Size = New System.Drawing.Size(403, 21)
-        Me.cbStrSend.TabIndex = 12
+        Me.bt_Load_TXT_File.Location = New System.Drawing.Point(25, 102)
+        Me.bt_Load_TXT_File.Name = "bt_Load_TXT_File"
+        Me.bt_Load_TXT_File.Size = New System.Drawing.Size(75, 38)
+        Me.bt_Load_TXT_File.TabIndex = 5
+        Me.bt_Load_TXT_File.Text = "Сценарий из Файла"
+        Me.ToolTip1.SetToolTip(Me.bt_Load_TXT_File, "Посылка содержимого из файла сценария в СОМ порт. Будет открыто диалоговое окно в" & _
+                " котором нужно будет выбрать файл сценария.")
+        Me.bt_Load_TXT_File.UseVisualStyleBackColor = True
         '
         'Form1
         '
@@ -731,7 +744,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.2.2"
+        Me.Text = "Терминал v1.2.3"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -821,5 +834,6 @@ Partial Class Form1
     Friend WithEvents tbTxDelay As System.Windows.Forms.MaskedTextBox
     Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
     Friend WithEvents cbStrSend As System.Windows.Forms.ComboBox
+    Friend WithEvents bt_Load_TXT_File As System.Windows.Forms.Button
 
 End Class
