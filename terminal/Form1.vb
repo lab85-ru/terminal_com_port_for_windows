@@ -1,6 +1,8 @@
 ﻿Imports System
 Imports System.IO
 Imports System.IO.Ports
+Imports System.Management
+
 
 '
 ' Необходимо реализовать:
@@ -93,7 +95,26 @@ Public Class Form1
 
     Dim f_send_st As file_send_st
 
+
+    '--------------------------------------------------------------
+    ' Запрос списка СОМ портов в системе
+    '--------------------------------------------------------------
+    Private Sub GetAllSerialPortsName()
+        Try
+            Dim searcher As New ManagementObjectSearcher("root\CIMV2", "SELECT * FROM Win32_PnPEntity")
+            For Each queryObj As ManagementObject In searcher.Get()
+                If InStr(queryObj("Caption"), "(COM") > 0 Then
+                    tbLogRx.AppendText(queryObj("Caption") + vbCrLf)
+                End If
+            Next
+        Catch err As ManagementException
+            MsgBox(err.Message)
+        End Try
+    End Sub
+
+    '--------------------------------------------------------------
     ' Поиск СОМ портов в системе
+    '--------------------------------------------------------------
     Sub find_com_port()
         Dim port As String
         Const STR_TIRE = "--------------------------------------"
@@ -110,6 +131,9 @@ Public Class Form1
         tbLogRx.AppendText(STR_TIRE + vbCrLf)
 
         cbPorts.SelectedIndex = 0 ' Всегда выбираем самый первый порт, для заполнения поля а то ПУСТОЕ плохо смотриться
+
+        GetAllSerialPortsName()
+        tbLogRx.AppendText(STR_TIRE + vbCrLf)
 
     End Sub
 
