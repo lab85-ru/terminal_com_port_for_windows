@@ -172,8 +172,8 @@ Module ComPort
         End If
 
         'Setup Time Outs for com port
-        CtimeOut.ReadIntervalTimeout = 1 ' 20
-        CtimeOut.ReadTotalTimeoutConstant = 1 ' 1
+        CtimeOut.ReadIntervalTimeout = 4294967295 '1 ' 20
+        CtimeOut.ReadTotalTimeoutConstant = 0 ' 1
         CtimeOut.ReadTotalTimeoutMultiplier = 0
         CtimeOut.WriteTotalTimeoutConstant = 0 '0 '1 ' 10
         CtimeOut.WriteTotalTimeoutMultiplier = 1 '1 '0

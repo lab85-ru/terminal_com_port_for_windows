@@ -719,12 +719,11 @@ Partial Class Form1
         Me.group_0d_0a.TabIndex = 11
         Me.group_0d_0a.TabStop = False
         Me.group_0d_0a.Text = "Вывод: 0x0D+0x0A"
+        Me.group_0d_0a.Visible = False
         '
         'cb0D0A_one
         '
         Me.cb0D0A_one.AutoSize = True
-        Me.cb0D0A_one.Checked = True
-        Me.cb0D0A_one.CheckState = System.Windows.Forms.CheckState.Checked
         Me.cb0D0A_one.Location = New System.Drawing.Point(6, 19)
         Me.cb0D0A_one.Name = "cb0D0A_one"
         Me.cb0D0A_one.Size = New System.Drawing.Size(91, 17)
@@ -755,7 +754,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.3.1"
+        Me.Text = "Терминал v1.3.2"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()

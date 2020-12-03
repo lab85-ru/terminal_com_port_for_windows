@@ -7,7 +7,7 @@ Imports System.Threading
 
 '
 ' Необходимо реализовать:
-' - передачу строки в нех кодировка как в фаре
+' + передачу строки в нех кодировка как в фаре
 ' - прием ESC последовательностей
 
 
@@ -15,7 +15,7 @@ Imports System.Threading
 Public Class Form1
 
     Dim flag_thread_stop As UInteger = 0 ' остановка потока
-    Dim RX_Thread As New System.Threading.Thread(AddressOf Thread_com_port_rx)
+    Dim RX_Thread As System.Threading.Thread = Nothing
 
 
     Const PORT_OPEN As String = "Открыть"
@@ -170,8 +170,8 @@ Public Class Form1
                 End If
             Next
 
-            If com_port_speed_int = 0 Or (com_port_speed_int < 110 And com_port_speed_int > 256000) Then
-                MsgBox("ОШИБКА: Значение параметра скорость задано не верно !" + vbCrLf + "MIN=110 MAX=256000")
+            If com_port_speed_int = 0 Or (com_port_speed_int < 110 Or com_port_speed_int > 3000000) Then
+                MsgBox("ОШИБКА: Значение параметра скорость задано не верно !" + vbCrLf + "MIN=110 MAX=3000000")
                 Exit Sub
             End If
 
@@ -214,13 +214,14 @@ Public Class Form1
 
             cbPorts.Enabled = False ' выключаем выбор номера порта
 
-            tbLogRx.AppendText(vbCrLf + "Порт Открыт." + vbCrLf)
+            tbLogRx.AppendText(vbCrLf + cbPorts.SelectedItem + " ОТКРЫТ ++++++++++++++++++++++++++++++++++++++++++++++++++" + vbCrLf)
 
             ' запускаем второй поток - приема данных из порта
             flag_thread_stop = 0
+            RX_Thread = New System.Threading.Thread(AddressOf Thread_com_port_rx)
             RX_Thread.Name = "COM port RX data thread"
-            RX_Thread.Priority = ThreadPriority.Highest
             RX_Thread.Start()
+            RX_Thread.IsBackground = True
 
         ElseIf CPortStatus = port_status_e.open Then ' Закрываем СОМ порт -------------------------------------
             ComPortClose()
@@ -251,13 +252,12 @@ Public Class Form1
 
             CPortStatus = port_status_e.close
             btPOpen.Text = PORT_OPEN
-            tbLogRx.AppendText(vbCrLf + "Порт == закрыт ===." + vbCrLf)
+            tbLogRx.AppendText(vbCrLf + cbPorts.SelectedItem + " ЗАКРЫТ --------------------------------------------------" + vbCrLf)
         End If
     End Sub
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-
-        RX_Thread.Priority = ThreadPriority.Highest
+        'RX_Thread.Priority = ThreadPriority.Highest
 
         CPortStatus = port_status_e.close
         btPOpen.Text = PORT_OPEN
@@ -1045,14 +1045,14 @@ Public Class Form1
                         ub = &H2E ' за место кода 00 выводим точку "."
                         s_out = s_out + Chr(ub)
 
-                    Case &HD
-                        s_out = s_out + vbCrLf
+                    Case &HD ' CR
+                        s_out = s_out + vbCr
 
-                    Case &HA
+                    Case &HA ' LF
                         If cb0D0A_one.Checked = True Then
                             s_out = s_out + ""
                         Else
-                            s_out = s_out + vbCrLf
+                            s_out = s_out + vbLf
                         End If
 
                     Case Else
@@ -1086,7 +1086,9 @@ Public Class Form1
 
     Private Sub Form1_FormClosing(ByVal sender As System.Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles MyBase.FormClosing
 
-        If RX_Thread.ThreadState <> ThreadState.Unstarted Then
+        If IsNothing(RX_Thread) Then
+
+        ElseIf RX_Thread.ThreadState <> ThreadState.Unstarted Then
             flag_thread_stop = 1 ' Останавливаем второй поток
             RX_Thread.Join() '     Ожидаем завершения потока
         End If
