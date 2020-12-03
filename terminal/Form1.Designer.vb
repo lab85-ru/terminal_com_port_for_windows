@@ -79,6 +79,7 @@ Partial Class Form1
         Me.tsslTxCounter = New System.Windows.Forms.ToolStripStatusLabel
         Me.tspbBar = New System.Windows.Forms.ToolStripProgressBar
         Me.gbKey = New System.Windows.Forms.GroupBox
+        Me.btSendStringToHEX = New System.Windows.Forms.Button
         Me.bt_Load_TXT_File = New System.Windows.Forms.Button
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.Timer3 = New System.Windows.Forms.Timer(Me.components)
@@ -585,17 +586,17 @@ Partial Class Form1
         '
         Me.btSendString.Location = New System.Drawing.Point(6, 18)
         Me.btSendString.Name = "btSendString"
-        Me.btSendString.Size = New System.Drawing.Size(110, 34)
+        Me.btSendString.Size = New System.Drawing.Size(110, 21)
         Me.btSendString.TabIndex = 4
-        Me.btSendString.Text = "Строка"
+        Me.btSendString.Text = "Строка TXT"
         Me.ToolTip1.SetToolTip(Me.btSendString, "Посылка строки в СОМ порт.")
         Me.btSendString.UseVisualStyleBackColor = True
         '
         'btFileSend
         '
-        Me.btFileSend.Location = New System.Drawing.Point(6, 58)
+        Me.btFileSend.Location = New System.Drawing.Point(6, 76)
         Me.btFileSend.Name = "btFileSend"
-        Me.btFileSend.Size = New System.Drawing.Size(110, 38)
+        Me.btFileSend.Size = New System.Drawing.Size(110, 20)
         Me.btFileSend.TabIndex = 3
         Me.btFileSend.Text = "Файл"
         Me.ToolTip1.SetToolTip(Me.btFileSend, "Посылка файла в СОМ порт. Будет открыто диалоговое окно в котором нужно будет выб" & _
@@ -671,6 +672,7 @@ Partial Class Form1
         '
         'gbKey
         '
+        Me.gbKey.Controls.Add(Me.btSendStringToHEX)
         Me.gbKey.Controls.Add(Me.bt_Load_TXT_File)
         Me.gbKey.Controls.Add(Me.btSendString)
         Me.gbKey.Controls.Add(Me.btFileSend)
@@ -680,6 +682,16 @@ Partial Class Form1
         Me.gbKey.TabIndex = 10
         Me.gbKey.TabStop = False
         Me.gbKey.Text = "ЗАПУСК Передачи"
+        '
+        'btSendStringToHEX
+        '
+        Me.btSendStringToHEX.Location = New System.Drawing.Point(6, 45)
+        Me.btSendStringToHEX.Name = "btSendStringToHEX"
+        Me.btSendStringToHEX.Size = New System.Drawing.Size(110, 21)
+        Me.btSendStringToHEX.TabIndex = 6
+        Me.btSendStringToHEX.Text = "Строка HEX"
+        Me.ToolTip1.SetToolTip(Me.btSendStringToHEX, "Посылка строки в СОМ порт.")
+        Me.btSendStringToHEX.UseVisualStyleBackColor = True
         '
         'bt_Load_TXT_File
         '
@@ -743,7 +755,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.3.0"
+        Me.Text = "Терминал v1.3.1"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -834,5 +846,6 @@ Partial Class Form1
     Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
     Friend WithEvents cbStrSend As System.Windows.Forms.ComboBox
     Friend WithEvents bt_Load_TXT_File As System.Windows.Forms.Button
+    Friend WithEvents btSendStringToHEX As System.Windows.Forms.Button
 
 End Class

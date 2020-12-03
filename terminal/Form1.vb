@@ -398,9 +398,22 @@ Public Class Form1
 
         CreateLogFileName = str
     End Function
+    '--------------------------------------------------------------------------
+    ' Входная строка в виде ТХТ - НЕХ виде, пересылается в виде байт
+    '--------------------------------------------------------------------------
+    Private Sub btSendStringToHEX_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btSendStringToHEX.Click
+        ' добавляем строку в историю ввода если такой строки нет
+        If cbStrSend.FindString(cbStrSend.Text) = -1 Then
+            cbStrSend.Items.Add(cbStrSend.Text)
+        End If
 
+        decode_txt_hex_codes(cbStrSend.Text + vbCrLf)
+    End Sub
+
+    '--------------------------------------------------------------------------
     ' Событие нажата кнопка перечачи строки в порт
     ' Передать строку
+    '--------------------------------------------------------------------------
     Private Sub btSendString_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btSendString.Click
 
         Dim d As Integer
@@ -993,9 +1006,9 @@ Public Class Form1
         Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
         Dim din As UInt32         ' количество пришедших данных
 
-        If CPortStatus = port_status_e.close Then
-            Exit Sub
-        End If
+        'If CPortStatus = port_status_e.close Then
+        'Exit Sub
+        'End If
 
         ' времы выполнения
         'Dim TStart As Date = Now
