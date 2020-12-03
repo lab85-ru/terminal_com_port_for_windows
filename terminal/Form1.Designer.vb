@@ -79,12 +79,12 @@ Partial Class Form1
         Me.tsslTxCounter = New System.Windows.Forms.ToolStripStatusLabel
         Me.tspbBar = New System.Windows.Forms.ToolStripProgressBar
         Me.gbKey = New System.Windows.Forms.GroupBox
+        Me.bt_Load_TXT_File = New System.Windows.Forms.Button
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.Timer3 = New System.Windows.Forms.Timer(Me.components)
         Me.group_0d_0a = New System.Windows.Forms.GroupBox
         Me.cb0D0A_one = New System.Windows.Forms.CheckBox
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
-        Me.bt_Load_TXT_File = New System.Windows.Forms.Button
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -441,7 +441,6 @@ Partial Class Form1
         '
         'Timer1
         '
-        Me.Timer1.Enabled = True
         Me.Timer1.Interval = 10
         '
         'gbTx
@@ -584,9 +583,9 @@ Partial Class Form1
         '
         'btSendString
         '
-        Me.btSendString.Location = New System.Drawing.Point(25, 18)
+        Me.btSendString.Location = New System.Drawing.Point(6, 18)
         Me.btSendString.Name = "btSendString"
-        Me.btSendString.Size = New System.Drawing.Size(75, 34)
+        Me.btSendString.Size = New System.Drawing.Size(110, 34)
         Me.btSendString.TabIndex = 4
         Me.btSendString.Text = "Строка"
         Me.ToolTip1.SetToolTip(Me.btSendString, "Посылка строки в СОМ порт.")
@@ -594,9 +593,9 @@ Partial Class Form1
         '
         'btFileSend
         '
-        Me.btFileSend.Location = New System.Drawing.Point(25, 58)
+        Me.btFileSend.Location = New System.Drawing.Point(6, 58)
         Me.btFileSend.Name = "btFileSend"
-        Me.btFileSend.Size = New System.Drawing.Size(75, 38)
+        Me.btFileSend.Size = New System.Drawing.Size(110, 38)
         Me.btFileSend.TabIndex = 3
         Me.btFileSend.Text = "Файл"
         Me.ToolTip1.SetToolTip(Me.btFileSend, "Посылка файла в СОМ порт. Будет открыто диалоговое окно в котором нужно будет выб" & _
@@ -682,6 +681,17 @@ Partial Class Form1
         Me.gbKey.TabStop = False
         Me.gbKey.Text = "ЗАПУСК Передачи"
         '
+        'bt_Load_TXT_File
+        '
+        Me.bt_Load_TXT_File.Location = New System.Drawing.Point(6, 102)
+        Me.bt_Load_TXT_File.Name = "bt_Load_TXT_File"
+        Me.bt_Load_TXT_File.Size = New System.Drawing.Size(110, 38)
+        Me.bt_Load_TXT_File.TabIndex = 5
+        Me.bt_Load_TXT_File.Text = "Сценарий из Файла"
+        Me.ToolTip1.SetToolTip(Me.bt_Load_TXT_File, "Посылка содержимого из файла сценария в СОМ порт. Будет открыто диалоговое окно в" & _
+                " котором нужно будет выбрать файл сценария.")
+        Me.bt_Load_TXT_File.UseVisualStyleBackColor = True
+        '
         'Timer2
         '
         '
@@ -711,17 +721,6 @@ Partial Class Form1
         Me.ToolTip1.SetToolTip(Me.cb0D0A_one, "Пропуск кода 0x0A. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Не выводит перевод строки от кода 0x0A.")
         Me.cb0D0A_one.UseVisualStyleBackColor = True
         '
-        'bt_Load_TXT_File
-        '
-        Me.bt_Load_TXT_File.Location = New System.Drawing.Point(25, 102)
-        Me.bt_Load_TXT_File.Name = "bt_Load_TXT_File"
-        Me.bt_Load_TXT_File.Size = New System.Drawing.Size(75, 38)
-        Me.bt_Load_TXT_File.TabIndex = 5
-        Me.bt_Load_TXT_File.Text = "Сценарий из Файла"
-        Me.ToolTip1.SetToolTip(Me.bt_Load_TXT_File, "Посылка содержимого из файла сценария в СОМ порт. Будет открыто диалоговое окно в" & _
-                " котором нужно будет выбрать файл сценария.")
-        Me.bt_Load_TXT_File.UseVisualStyleBackColor = True
-        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -744,7 +743,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.2.4"
+        Me.Text = "Терминал v1.3.0"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()

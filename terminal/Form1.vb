@@ -2,6 +2,7 @@
 Imports System.IO
 Imports System.IO.Ports
 Imports System.Management
+Imports System.Threading
 
 
 '
@@ -12,6 +13,10 @@ Imports System.Management
 
 
 Public Class Form1
+
+    Dim flag_thread_stop As UInteger = 0 ' остановка потока
+    Dim RX_Thread As New System.Threading.Thread(AddressOf Thread_com_port_rx)
+
 
     Const PORT_OPEN As String = "Открыть"
     Const PORT_CLOSE As String = "Закрыть"
@@ -209,10 +214,19 @@ Public Class Form1
 
             cbPorts.Enabled = False ' выключаем выбор номера порта
 
-
             tbLogRx.AppendText(vbCrLf + "Порт Открыт." + vbCrLf)
+
+            ' запускаем второй поток - приема данных из порта
+            flag_thread_stop = 0
+            RX_Thread.Name = "COM port RX data thread"
+            RX_Thread.Priority = ThreadPriority.Highest
+            RX_Thread.Start()
+
         ElseIf CPortStatus = port_status_e.open Then ' Закрываем СОМ порт -------------------------------------
             ComPortClose()
+
+            flag_thread_stop = 1
+            RX_Thread.Join()
 
             ' Включаем меню даем выбрать
             gbSetPortSpeed.Enabled = True
@@ -242,6 +256,9 @@ Public Class Form1
     End Sub
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+
+        RX_Thread.Priority = ThreadPriority.Highest
+
         CPortStatus = port_status_e.close
         btPOpen.Text = PORT_OPEN
         rbSpeed115200.Checked = True
@@ -340,93 +357,6 @@ Public Class Form1
 
     ' таймер настроен на 10 мс (при 100 мс - неуспевает принимать, теряются данные)
     Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
-        Dim ub As Byte            ' принятый байт
-        Dim s As String = ""      ' строка в виде НЕХ
-        Dim s1 As String = ""     ' строка в виде БИН
-        Dim s_out As String = ""  ' строка на вывод
-        Dim sl_n As Integer = 0   ' счетчик длинны строки
-        Dim sc As String = ""     ' строка одного символа НЕХ
-        Dim sw As String = ""     ' строка для сохранения в файл
-        Dim l_n As Integer = 0    ' количество линий
-        Dim l_n2 As Integer = 0   ' количество линий в строке (для расчета)
-        Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
-        Dim din As UInt32         ' количество пришедших данных
-
-        If CPortStatus = port_status_e.close Then
-            Exit Sub
-        End If
-
-        ' времы выполнения
-        'Dim TStart As Date = Now
-        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & " ms" & vbCrLf)
-
-        ' ----- ПРИЕМ ДАННЫХ -----------
-        din = BUFIN_SIZE
-        ComPortRead(bufin, din)
-        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "RX ms" & vbCrLf)
-
-        If din = 0 Then ' Пусто нет данных выходим
-            Exit Sub
-        End If
-
-        'tbLogTx.AppendText(Str(din) + vbCrLf)
-
-        rx_counter_global = rx_counter_global + din
-
-        ' Запись в лог файл Приема
-        If flag_write_log = True And din > 0 Then
-            f_log.Write(bufin, 0, din)
-        End If
-
-        ' --------- ОБРАБОТКА ПРИНЯТЫХ БАННЫХ -----------------
-        If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
-            s_out = ConvArrayByteToHEX(bufin, din)
-
-        Else                               ' ASCII ------------------------------------------------------------------
-            For i = 0 To din - 1
-                ub = bufin(i)
-
-                Select Case ub
-                    Case &H0
-                        ub = &H2E ' за место кода 00 выводим точку "."
-                        s_out = s_out + Chr(ub)
-
-                    Case &HD
-                        s_out = s_out + vbCrLf
-
-                    Case &HA
-                        If cb0D0A_one.Checked = True Then
-                            s_out = s_out + ""
-                        Else
-                            s_out = s_out + vbCrLf
-                        End If
-
-                    Case Else
-                        s_out = s_out + Chr(ub)
-                End Select
-
-            Next i
-
-        End If
-
-        If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
-            l_n = tbLogRx.Lines.Count
-            tbLogRx.AppendText(s_out)
-            l_n = tbLogRx.Lines.Count
-            If l_n > LINES_MAX + 100 Then
-                Del_Str(tbLogRx, LINES_MAX)
-            End If
-
-        Else ' ASCII ----------------------------------------------------------------------------------------------------------
-            l_n2 = Len(s_out)
-            tbLogRx.AppendText(s_out)
-            If l_n > LINES_MAX + 100 Then
-                Del_Str(tbLogRx, LINES_MAX)
-            End If
-
-        End If
-
-        trx_count_update() ' обновление счетчиков TX RX в строке статуса
 
     End Sub
 
@@ -870,7 +800,7 @@ Public Class Form1
                         End If
                     Else
                         delay_ms = build_delay(delay_num, delay_cnt)
-                        print_log(vbCrLf + "Delay:" + Str(delay_ms) + vbCrLf)
+                        print_log("Пауза: " + Str(delay_ms) + " ms" + vbCrLf)
                         delay_cnt = 0
 
                         Threading.Thread.Sleep(delay_ms)
@@ -892,15 +822,15 @@ Public Class Form1
     '--------------------------------------------------------------------------
     ' Проигрыванеи сценария из файла
     ' Пример сценария:
-    '
+    ' Файл TXT, формат:
     ' 81 01 04 07 03 FF
     ' > 100
     ' 81 01 04 07 02 FF
     '
     ' Где:
-    ' 81 01 04 07 03 FF - значения байт в HEX формате отправляемыз в СОМ порт
-    ' > 100             - Формирование задержки 100 мс.
-    ' 81 01 04 07 02 FF - значения байт в HEX формате отправляемыз в СОМ порт
+    ' 81 01 04 07 03 FF - значения байт в TXT-HEX формате отправляемых в СОМ порт
+    ' > 100             - Формирование паузы 100 мс.
+    ' 81 01 04 07 02 FF - значения байт в HEX формате отправляемых в СОМ порт
     '
     '
     '--------------------------------------------------------------------------
@@ -948,20 +878,6 @@ Public Class Form1
 
             fileReader.Close()
 
-            'f_send_st.fs = New FileStream(OpenFileDialog1.FileName, FileMode.Open, FileAccess.Read)
-
-            'print_log(vbCrLf + "Загрузка файла (размер = " + Str(f_send_st.file_size) + " байт) ..." + vbCrLf)
-
-            'f_send_st.res = f_send_st.fs.Read(f_send_st.buf, 0, file_send_st.BUF_SIZE)
-            'print_log("Прочитали файл длинной = " + Str(f_send_st.res) + " байт" + vbCrLf)
-
-            'If CPortStatus = port_status_e.close Then
-            'print_log("Ошибка порт не открыт, СТОП ..." + vbCrLf)
-            'Exit Sub
-            'End If
-
-            'print_log("Проигрывание сценария из файла..." + vbCrLf)
-            'decode_txt_hex_codes(System.Text.Encoding.UTF8.GetString(f_send_st.buf))
         End If
 
     End Sub
@@ -1045,5 +961,122 @@ Public Class Form1
         print_log(s)
 
     End Sub
+    '--------------------------------------------------------------------------
+    ' Второй поток приема данных из СОМ порта
+    '--------------------------------------------------------------------------
+    Sub Thread_com_port_rx()
 
+        Do While flag_thread_stop = 0
+
+            Thread.Sleep(2)
+
+            If InvokeRequired Then
+                BeginInvoke(New MethodInvoker(AddressOf decode_rx_com_port_data))
+            End If
+
+        Loop
+    End Sub
+
+    '--------------------------------------------------------------------------
+    ' Обработка и вывод принятых данных из СОМ порта
+    '--------------------------------------------------------------------------
+    Sub decode_rx_com_port_data()
+        Dim ub As Byte            ' принятый байт
+        Dim s As String = ""      ' строка в виде НЕХ
+        Dim s1 As String = ""     ' строка в виде БИН
+        Dim s_out As String = ""  ' строка на вывод
+        Dim sl_n As Integer = 0   ' счетчик длинны строки
+        Dim sc As String = ""     ' строка одного символа НЕХ
+        Dim sw As String = ""     ' строка для сохранения в файл
+        Dim l_n As Integer = 0    ' количество линий
+        Dim l_n2 As Integer = 0   ' количество линий в строке (для расчета)
+        Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
+        Dim din As UInt32         ' количество пришедших данных
+
+        If CPortStatus = port_status_e.close Then
+            Exit Sub
+        End If
+
+        ' времы выполнения
+        'Dim TStart As Date = Now
+        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & " ms" & vbCrLf)
+
+        ' ----- ПРИЕМ ДАННЫХ -----------
+        din = BUFIN_SIZE
+        ComPortRead(bufin, din)
+        'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "RX ms" & vbCrLf)
+
+        If din = 0 Then ' Пусто нет данных выходим
+            Exit Sub
+        End If
+
+        'tbLogTx.AppendText(Str(din) + vbCrLf)
+
+        rx_counter_global = rx_counter_global + din
+
+        ' Запись в лог файл Приема
+        If flag_write_log = True And din > 0 Then
+            f_log.Write(bufin, 0, din)
+        End If
+
+        ' --------- ОБРАБОТКА ПРИНЯТЫХ БАННЫХ -----------------
+        If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
+            s_out = ConvArrayByteToHEX(bufin, din)
+
+        Else                               ' ASCII ------------------------------------------------------------------
+            For i = 0 To din - 1
+                ub = bufin(i)
+
+                Select Case ub
+                    Case &H0
+                        ub = &H2E ' за место кода 00 выводим точку "."
+                        s_out = s_out + Chr(ub)
+
+                    Case &HD
+                        s_out = s_out + vbCrLf
+
+                    Case &HA
+                        If cb0D0A_one.Checked = True Then
+                            s_out = s_out + ""
+                        Else
+                            s_out = s_out + vbCrLf
+                        End If
+
+                    Case Else
+                        s_out = s_out + Chr(ub)
+                End Select
+
+            Next i
+
+        End If
+
+        If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
+            l_n = tbLogRx.Lines.Count
+            tbLogRx.AppendText(s_out)
+            l_n = tbLogRx.Lines.Count
+            If l_n > LINES_MAX + 100 Then
+                Del_Str(tbLogRx, LINES_MAX)
+            End If
+
+        Else ' ASCII ----------------------------------------------------------------------------------------------------------
+            l_n2 = Len(s_out)
+            tbLogRx.AppendText(s_out)
+            If l_n > LINES_MAX + 100 Then
+                Del_Str(tbLogRx, LINES_MAX)
+            End If
+
+        End If
+
+        trx_count_update() ' обновление счетчиков TX RX в строке статуса
+
+    End Sub
+
+    Private Sub Form1_FormClosing(ByVal sender As System.Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles MyBase.FormClosing
+
+        If RX_Thread.ThreadState <> ThreadState.Unstarted Then
+            flag_thread_stop = 1 ' Останавливаем второй поток
+            RX_Thread.Join() '     Ожидаем завершения потока
+        End If
+
+    End Sub
 End Class
