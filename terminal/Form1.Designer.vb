@@ -662,7 +662,7 @@ Partial Class Form1
         Me.tsslTxCounter.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
         Me.tsslTxCounter.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslTxCounter.Name = "tsslTxCounter"
-        Me.tsslTxCounter.Size = New System.Drawing.Size(28, 19)
+        Me.tsslTxCounter.Size = New System.Drawing.Size(27, 19)
         Me.tsslTxCounter.Text = "TX:"
         '
         'tspbBar
