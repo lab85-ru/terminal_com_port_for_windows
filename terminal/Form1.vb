@@ -1049,8 +1049,8 @@ Public Class Form1
                         s_out = s_out + vbCr
 
                     Case &HA ' LF
-                        If cb0D0A_one.Checked = True Then
-                            s_out = s_out + ""
+                        If cbCode_0A_to_0D0A.Checked = True Then ' Преобразовать код \n -> \n\r
+                            s_out = s_out + vbCrLf
                         Else
                             s_out = s_out + vbLf
                         End If

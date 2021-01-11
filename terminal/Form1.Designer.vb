@@ -84,7 +84,7 @@ Partial Class Form1
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.Timer3 = New System.Windows.Forms.Timer(Me.components)
         Me.group_0d_0a = New System.Windows.Forms.GroupBox
-        Me.cb0D0A_one = New System.Windows.Forms.CheckBox
+        Me.cbCode_0A_to_0D0A = New System.Windows.Forms.CheckBox
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
@@ -712,25 +712,28 @@ Partial Class Form1
         '
         'group_0d_0a
         '
-        Me.group_0d_0a.Controls.Add(Me.cb0D0A_one)
+        Me.group_0d_0a.Controls.Add(Me.cbCode_0A_to_0D0A)
         Me.group_0d_0a.Location = New System.Drawing.Point(794, 359)
         Me.group_0d_0a.Name = "group_0d_0a"
         Me.group_0d_0a.Size = New System.Drawing.Size(117, 43)
         Me.group_0d_0a.TabIndex = 11
         Me.group_0d_0a.TabStop = False
-        Me.group_0d_0a.Text = "Вывод: 0x0D+0x0A"
-        Me.group_0d_0a.Visible = False
+        Me.group_0d_0a.Text = "Преобразование:"
+
+
         '
-        'cb0D0A_one
+        ''cbCode_0A_to_0D0A
         '
-        Me.cb0D0A_one.AutoSize = True
-        Me.cb0D0A_one.Location = New System.Drawing.Point(6, 19)
-        Me.cb0D0A_one.Name = "cb0D0A_one"
-        Me.cb0D0A_one.Size = New System.Drawing.Size(91, 17)
-        Me.cb0D0A_one.TabIndex = 0
-        Me.cb0D0A_one.Text = "Только 0x0D"
-        Me.ToolTip1.SetToolTip(Me.cb0D0A_one, "Пропуск кода 0x0A. " & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Не выводит перевод строки от кода 0x0A.")
-        Me.cb0D0A_one.UseVisualStyleBackColor = True
+        Me.cbCode_0A_to_0D0A.AutoSize = True
+        Me.cbCode_0A_to_0D0A.Location = New System.Drawing.Point(6, 19)
+        Me.cbCode_0A_to_0D0A.Name = "cbCode_0A_to_0D0A"
+        Me.cbCode_0A_to_0D0A.Size = New System.Drawing.Size(74, 17)
+        Me.cbCode_0A_to_0D0A.TabIndex = 0
+        Me.cbCode_0A_to_0D0A.Text = "\n => \n\r"
+        Me.ToolTip1.SetToolTip(Me.cbCode_0A_to_0D0A, "Преобразование кода 0x0A в два кода 0x0D и 0x0A.")
+        Me.cbCode_0A_to_0D0A.UseVisualStyleBackColor = True
+
+
         '
         'Form1
         '
@@ -754,7 +757,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.3.2"
+        Me.Text = "Терминал v1.3.3"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -840,7 +843,7 @@ Partial Class Form1
     Friend WithEvents btClearRxLog As System.Windows.Forms.Button
     Friend WithEvents Timer3 As System.Windows.Forms.Timer
     Friend WithEvents group_0d_0a As System.Windows.Forms.GroupBox
-    Friend WithEvents cb0D0A_one As System.Windows.Forms.CheckBox
+    Friend WithEvents cbCode_0A_to_0D0A As System.Windows.Forms.CheckBox
     Friend WithEvents tbTxDelay As System.Windows.Forms.MaskedTextBox
     Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
     Friend WithEvents cbStrSend As System.Windows.Forms.ComboBox
