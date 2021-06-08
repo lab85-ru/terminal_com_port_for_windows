@@ -662,7 +662,7 @@ Partial Class Form1
         Me.tsslTxCounter.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
         Me.tsslTxCounter.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslTxCounter.Name = "tsslTxCounter"
-        Me.tsslTxCounter.Size = New System.Drawing.Size(27, 19)
+        Me.tsslTxCounter.Size = New System.Drawing.Size(28, 19)
         Me.tsslTxCounter.Text = "TX:"
         '
         'tspbBar
@@ -719,10 +719,8 @@ Partial Class Form1
         Me.group_0d_0a.TabIndex = 11
         Me.group_0d_0a.TabStop = False
         Me.group_0d_0a.Text = "Преобразование:"
-
-
         '
-        ''cbCode_0A_to_0D0A
+        'cbCode_0A_to_0D0A
         '
         Me.cbCode_0A_to_0D0A.AutoSize = True
         Me.cbCode_0A_to_0D0A.Location = New System.Drawing.Point(6, 19)
@@ -732,8 +730,6 @@ Partial Class Form1
         Me.cbCode_0A_to_0D0A.Text = "\n => \n\r"
         Me.ToolTip1.SetToolTip(Me.cbCode_0A_to_0D0A, "Преобразование кода 0x0A в два кода 0x0D и 0x0A.")
         Me.cbCode_0A_to_0D0A.UseVisualStyleBackColor = True
-
-
         '
         'Form1
         '
@@ -757,7 +753,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.3.3"
+        Me.Text = "Терминал v1.3.4"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
