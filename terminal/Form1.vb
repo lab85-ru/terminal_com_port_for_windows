@@ -1041,7 +1041,7 @@ Public Class Form1
                 ub = bufin(i)
 
                 Select Case ub
-                    Case &H0 To &H19
+                    Case &H0 To &H9, &HB, &HC, &HE To &H19
                         ub = &H2E ' за место кода 00 выводим точку "."
                         s_out = s_out + Chr(ub)
 
