@@ -690,7 +690,7 @@ Partial Class Form1
         Me.btSendStringToHEX.Size = New System.Drawing.Size(110, 21)
         Me.btSendStringToHEX.TabIndex = 6
         Me.btSendStringToHEX.Text = "Строка HEX"
-        Me.ToolTip1.SetToolTip(Me.btSendStringToHEX, "Посылка строки в СОМ порт.")
+        Me.ToolTip1.SetToolTip(Me.btSendStringToHEX, "Посылка HEX строки (пример 0A FD EA) в СОМ порт.")
         Me.btSendStringToHEX.UseVisualStyleBackColor = True
         '
         'bt_Load_TXT_File
