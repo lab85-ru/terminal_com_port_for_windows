@@ -216,7 +216,7 @@ Module ComPort
         retval = SetCommState(ComHandle, BarDCB)
         If retval = 0 Then
             retval = GetLastError()
-            MsgBox("Unable to set Comm DCB " & " Error: " & retval & vbCrLf & "!!! Возможно данная скорость не поддерживается !!!")
+            MsgBox("Unable to set Comm DCB " & " Error: " & retval & vbCrLf & "!!! Данная кофигурация: Скорость или настройки порта не поддерживаются драйвером !!!")
             retval = CloseHandle(ComHandle)
             ComPortInit = False
             Exit Function

@@ -367,7 +367,7 @@ Partial Class Form1
         'rbStopBit15
         '
         Me.rbStopBit15.AutoSize = True
-        Me.rbStopBit15.Location = New System.Drawing.Point(6, 66)
+        Me.rbStopBit15.Location = New System.Drawing.Point(6, 41)
         Me.rbStopBit15.Name = "rbStopBit15"
         Me.rbStopBit15.Size = New System.Drawing.Size(40, 17)
         Me.rbStopBit15.TabIndex = 2
@@ -378,7 +378,7 @@ Partial Class Form1
         'rbStopBit2
         '
         Me.rbStopBit2.AutoSize = True
-        Me.rbStopBit2.Location = New System.Drawing.Point(6, 43)
+        Me.rbStopBit2.Location = New System.Drawing.Point(6, 63)
         Me.rbStopBit2.Name = "rbStopBit2"
         Me.rbStopBit2.Size = New System.Drawing.Size(31, 17)
         Me.rbStopBit2.TabIndex = 1
@@ -753,7 +753,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.3.5"
+        Me.Text = "Терминал v1.3.6"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()

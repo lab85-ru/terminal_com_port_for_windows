@@ -306,10 +306,10 @@ Public Class Form1
         rbStopBit_array(0).rb = rbStopBit1
         rbStopBit_array(0).s = ONESTOPBIT
 
-        rbStopBit_array(1).rb = rbStopBit2
+        rbStopBit_array(1).rb = rbStopBit15
         rbStopBit_array(1).s = ONE5STOPBITS
 
-        rbStopBit_array(2).rb = rbStopBit15
+        rbStopBit_array(2).rb = rbStopBit2
         rbStopBit_array(2).s = TWOSTOPBITS
 
         ReDim rbAddEndStr_array(4)
