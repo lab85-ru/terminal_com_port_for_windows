@@ -117,9 +117,10 @@ Partial Class Form1
         'cbPorts
         '
         Me.cbPorts.FormattingEnabled = True
-        Me.cbPorts.Location = New System.Drawing.Point(8, 42)
+        Me.cbPorts.IntegralHeight = False
+        Me.cbPorts.Location = New System.Drawing.Point(6, 42)
         Me.cbPorts.Name = "cbPorts"
-        Me.cbPorts.Size = New System.Drawing.Size(58, 21)
+        Me.cbPorts.Size = New System.Drawing.Size(68, 21)
         Me.cbPorts.TabIndex = 2
         Me.ToolTip1.SetToolTip(Me.cbPorts, "Выберите СОМ порт с которым собираетесь работать.")
         '
@@ -206,6 +207,8 @@ Partial Class Form1
         Me.rbSpeedNumer.TabIndex = 7
         Me.rbSpeedNumer.TabStop = True
         Me.rbSpeedNumer.Text = "Значение"
+        Me.ToolTip1.SetToolTip(Me.rbSpeedNumer, "ВНИМАНИЕ: Реальная установленная скорость может существенно отличаться т.к. драйв" & _
+                "ер производит округление значения скорости !!!")
         Me.rbSpeedNumer.UseVisualStyleBackColor = True
         '
         'rbSpeed115200
@@ -753,7 +756,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.3.6"
+        Me.Text = "Терминал v1.3.7"
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()

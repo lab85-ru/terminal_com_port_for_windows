@@ -224,37 +224,49 @@ Public Class Form1
             RX_Thread.IsBackground = True
 
         ElseIf CPortStatus = port_status_e.open Then ' Закрываем СОМ порт -------------------------------------
-            ComPortClose()
-
-            flag_thread_stop = 1
-            RX_Thread.Join()
-
-            ' Включаем меню даем выбрать
-            gbSetPortSpeed.Enabled = True
-            gbSetPortStopBit.Enabled = True
-            gbSetPortParity.Enabled = True
-
-            gbTx.Enabled = False ' выключаем передача строки
-            gbKey.Enabled = False
-
-            cbPorts.Enabled = True ' включаем выбор номера порта
-
-            Timer3.Enabled = False ' Выключам передачу файла - даже на посреди передачи
-            btFileSend.Text = SEND_FILE_START
-
-            Timer2.Enabled = False
-            btSendString.Text = SEND_STR_START ' Выключаем таймер переодической передачи строки
-            btSendString.Enabled = True
-            gbStringEnd.Enabled = True
-            gbTypeTxStr.Enabled = True
-            cbStrSend.Enabled = True
-            btFileSend.Enabled = True
-
-            CPortStatus = port_status_e.close
-            btPOpen.Text = PORT_OPEN
-            tbLogRx.AppendText(vbCrLf + cbPorts.SelectedItem + " ЗАКРЫТ --------------------------------------------------" + vbCrLf)
+            GlobalComPortClose()
         End If
     End Sub
+
+    ' Закрытие порта + отключение интерфейсов 
+    Sub GlobalComPortClose()
+
+        If CPortStatus <> port_status_e.open Then
+            Exit Sub
+        End If
+
+        ComPortClose()
+
+        flag_thread_stop = 1
+        RX_Thread.Join()
+
+        ' Включаем меню даем выбрать
+        gbSetPortSpeed.Enabled = True
+        gbSetPortStopBit.Enabled = True
+        gbSetPortParity.Enabled = True
+
+        gbTx.Enabled = False ' выключаем передача строки
+        gbKey.Enabled = False
+
+        cbPorts.Enabled = True ' включаем выбор номера порта
+
+        Timer3.Enabled = False ' Выключам передачу файла - даже на посреди передачи
+        btFileSend.Text = SEND_FILE_START
+
+        Timer2.Enabled = False
+        btSendString.Text = SEND_STR_START ' Выключаем таймер переодической передачи строки
+        btSendString.Enabled = True
+        gbStringEnd.Enabled = True
+        gbTypeTxStr.Enabled = True
+        cbStrSend.Enabled = True
+        btFileSend.Enabled = True
+
+        CPortStatus = port_status_e.close
+        btPOpen.Text = PORT_OPEN
+        tbLogRx.AppendText(vbCrLf + cbPorts.SelectedItem + " ЗАКРЫТ --------------------------------------------------" + vbCrLf)
+
+    End Sub
+
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'RX_Thread.Priority = ThreadPriority.Highest
@@ -1005,6 +1017,7 @@ Public Class Form1
         Dim l_n2 As Integer = 0   ' количество линий в строке (для расчета)
         Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
         Dim din As UInt32         ' количество пришедших данных
+        Dim res As Int32          ' != 0 ошибка
 
         'If CPortStatus = port_status_e.close Then
         'Exit Sub
@@ -1016,7 +1029,12 @@ Public Class Form1
 
         ' ----- ПРИЕМ ДАННЫХ -----------
         din = BUFIN_SIZE
-        ComPortRead(bufin, din)
+        res = ComPortRead(bufin, din)
+        If res <> 0 Then ' Произошда ошибка - закрываем порт
+            GlobalComPortClose()
+        End If
+
+
         'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "RX ms" & vbCrLf)
 
         If din = 0 Then ' Пусто нет данных выходим

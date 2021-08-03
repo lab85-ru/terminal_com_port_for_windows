@@ -235,26 +235,24 @@ handelinitcom:
     ' Чтение данных из порта
     ' buf_r()   - массив куда будут скопированы данные
     ' RetBytes  - размер buf_out() буфера И размер прочитанных данных !
+    '
+    ' результат - 0 - Ошибка, !=0 - нет ошибок
     '-------------------------------------------------------------------
-    Sub ComPortRead(ByRef buf_r() As Byte, ByRef RetBytes As Int32)
+    Function ComPortRead(ByRef buf_r() As Byte, ByRef RetBytes As Int32) As Int32
         On Error GoTo handelpurecom
 
-        'Dim i As Integer
         Dim retval As Int32 = 0
 
-        'retval = ReadFile(ComNum, buf_rx(0), BUF_RX_SIZE, RetBytes, 0)
-        'retval = ReadFile(ComHandle, buf_rx(0), RetBytes, RetBytes, 0)
         retval = ReadFile(ComHandle, buf_r(0), RetBytes, RetBytes, 0)
-        If (RetBytes > 0) Then
-            'For i = 0 To RetBytes - 1
-            'buf_r(i) = buf_rx(i)
-            'Next i
+        If retval = 0 Then
+            ComPortRead = 1
         Else
-            ComPortFlush()
+            ComPortRead = 0
         End If
+
 handelpurecom:
-        Exit Sub
-    End Sub
+        Exit Function
+    End Function
     '-------------------------------------------------------------------
     ' Передача массива buf_t() байт, длинной len в порт
     ' Возвращает количество пеерданных байт
