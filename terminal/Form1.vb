@@ -17,6 +17,8 @@ Public Class Form1
     Dim flag_thread_stop As UInteger = 0 ' остановка потока
     Dim RX_Thread As System.Threading.Thread = Nothing
 
+    Const UART_MIN_SPEED As Integer = 110 ' Ограничение. Минимальная скорость работы UART порта
+    Const UART_MAX_SPEED As Integer = 12000000 ' Ограничение. Максимальная скорость работы UART порта (ft232h)
 
     Const PORT_OPEN As String = "Открыть"
     Const PORT_CLOSE As String = "Закрыть"
@@ -35,6 +37,12 @@ Public Class Form1
     Enum port_status_e
         open = 1
         close = 0
+    End Enum
+
+    ' Тип строки для передачи в СОМ порт (ТЕСКТ - как есть или в HEX виде)
+    Enum String_send_of_type
+        STRING_SEND_TXT = 0
+        STRING_SEND_HEX = 1
     End Enum
 
     Dim com_port_speed_int As Integer = 0 ' числовое значение скорости (для расчета, таймаута между передачами блоков)
@@ -170,8 +178,8 @@ Public Class Form1
                 End If
             Next
 
-            If com_port_speed_int = 0 Or (com_port_speed_int < 110 Or com_port_speed_int > 3000000) Then
-                MsgBox("ОШИБКА: Значение параметра скорость задано не верно !" + vbCrLf + "MIN=110 MAX=3000000")
+            If com_port_speed_int = 0 Or (com_port_speed_int < UART_MIN_SPEED Or com_port_speed_int > UART_MAX_SPEED) Then
+                MsgBox("ОШИБКА: Значение параметра скорость задано не верно !" + vbCrLf + "MIN=" + Str(UART_MIN_SPEED) + " MAX=" + Str(UART_MAX_SPEED))
                 Exit Sub
             End If
 
@@ -414,19 +422,13 @@ Public Class Form1
     ' Входная строка в виде ТХТ - НЕХ виде, пересылается в виде байт
     '--------------------------------------------------------------------------
     Private Sub btSendStringToHEX_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btSendStringToHEX.Click
-        ' добавляем строку в историю ввода если такой строки нет
-        If cbStrSend.FindString(cbStrSend.Text) = -1 Then
-            cbStrSend.Items.Add(cbStrSend.Text)
-        End If
-
-        decode_txt_hex_codes(cbStrSend.Text + vbCrLf)
+        send_string_to_com_port(String_send_of_type.STRING_SEND_HEX)
     End Sub
 
     '--------------------------------------------------------------------------
-    ' Событие нажата кнопка перечачи строки в порт
-    ' Передать строку
+    ' Передача строки вида ТХТ или НЕХ в порт
     '--------------------------------------------------------------------------
-    Private Sub btSendString_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btSendString.Click
+    Private Sub send_string_to_com_port(ByVal string_tx_type As String_send_of_type)
 
         Dim d As Integer
 
@@ -465,8 +467,21 @@ Public Class Form1
             End If
 
         Else
-            TxString()
+            If (string_tx_type = String_send_of_type.STRING_SEND_TXT) Then
+                TxString() ' Текстовая строка
+            Else
+                decode_txt_hex_codes(cbStrSend.Text + vbCrLf) ' HEX
+            End If
+
         End If
+    End Sub
+
+    '--------------------------------------------------------------------------
+    ' Событие нажата кнопка перечачи строки в порт
+    ' Передать строку
+    '--------------------------------------------------------------------------
+    Private Sub btSendString_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btSendString.Click
+        send_string_to_com_port(String_send_of_type.STRING_SEND_TXT)
     End Sub
 
     ' Передача строки 1 раз + вывод в лог(символы - НЕХ)
