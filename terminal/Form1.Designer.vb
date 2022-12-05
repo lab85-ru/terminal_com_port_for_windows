@@ -78,6 +78,10 @@ Partial Class Form1
         Me.tsslRxCounter = New System.Windows.Forms.ToolStripStatusLabel
         Me.tsslTxCounter = New System.Windows.Forms.ToolStripStatusLabel
         Me.tspbBar = New System.Windows.Forms.ToolStripProgressBar
+        Me.tsslComSignalCTS = New System.Windows.Forms.ToolStripStatusLabel
+        Me.tsslComSignalDSR = New System.Windows.Forms.ToolStripStatusLabel
+        Me.tsslComSignalRI = New System.Windows.Forms.ToolStripStatusLabel
+        Me.tsslComSignalCD = New System.Windows.Forms.ToolStripStatusLabel
         Me.gbKey = New System.Windows.Forms.GroupBox
         Me.btSendStringToHEX = New System.Windows.Forms.Button
         Me.bt_Load_TXT_File = New System.Windows.Forms.Button
@@ -86,6 +90,9 @@ Partial Class Form1
         Me.group_0d_0a = New System.Windows.Forms.GroupBox
         Me.cbCode_0A_to_0D0A = New System.Windows.Forms.CheckBox
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
+        Me.gbModemSet = New System.Windows.Forms.GroupBox
+        Me.cbComSignalRTS = New System.Windows.Forms.CheckBox
+        Me.cbComSignalDTR = New System.Windows.Forms.CheckBox
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -100,6 +107,7 @@ Partial Class Form1
         Me.StatusStrip1.SuspendLayout()
         Me.gbKey.SuspendLayout()
         Me.group_0d_0a.SuspendLayout()
+        Me.gbModemSet.SuspendLayout()
         Me.SuspendLayout()
         '
         'gbPort
@@ -445,7 +453,8 @@ Partial Class Form1
         '
         'Timer1
         '
-        Me.Timer1.Interval = 10
+        Me.Timer1.Enabled = True
+        Me.Timer1.Interval = 300
         '
         'gbTx
         '
@@ -645,7 +654,7 @@ Partial Class Form1
         '
         'StatusStrip1
         '
-        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsslRxCounter, Me.tsslTxCounter, Me.tspbBar})
+        Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsslRxCounter, Me.tsslTxCounter, Me.tspbBar, Me.tsslComSignalCTS, Me.tsslComSignalDSR, Me.tsslComSignalRI, Me.tsslComSignalCD})
         Me.StatusStrip1.Location = New System.Drawing.Point(0, 772)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.Size = New System.Drawing.Size(918, 24)
@@ -672,6 +681,34 @@ Partial Class Form1
         '
         Me.tspbBar.Name = "tspbBar"
         Me.tspbBar.Size = New System.Drawing.Size(100, 18)
+        '
+        'tsslComSignalCTS
+        '
+        Me.tsslComSignalCTS.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
+        Me.tsslComSignalCTS.Name = "tsslComSignalCTS"
+        Me.tsslComSignalCTS.Size = New System.Drawing.Size(43, 19)
+        Me.tsslComSignalCTS.Text = "CTS=x"
+        '
+        'tsslComSignalDSR
+        '
+        Me.tsslComSignalDSR.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
+        Me.tsslComSignalDSR.Name = "tsslComSignalDSR"
+        Me.tsslComSignalDSR.Size = New System.Drawing.Size(46, 19)
+        Me.tsslComSignalDSR.Text = "DSR=x"
+        '
+        'tsslComSignalRI
+        '
+        Me.tsslComSignalRI.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
+        Me.tsslComSignalRI.Name = "tsslComSignalRI"
+        Me.tsslComSignalRI.Size = New System.Drawing.Size(34, 19)
+        Me.tsslComSignalRI.Text = "RI=x"
+        '
+        'tsslComSignalCD
+        '
+        Me.tsslComSignalCD.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
+        Me.tsslComSignalCD.Name = "tsslComSignalCD"
+        Me.tsslComSignalCD.Size = New System.Drawing.Size(38, 19)
+        Me.tsslComSignalCD.Text = "CD=x"
         '
         'gbKey
         '
@@ -734,11 +771,43 @@ Partial Class Form1
         Me.ToolTip1.SetToolTip(Me.cbCode_0A_to_0D0A, "Преобразование кода 0x0A в два кода 0x0D и 0x0A.")
         Me.cbCode_0A_to_0D0A.UseVisualStyleBackColor = True
         '
+        'gbModemSet
+        '
+        Me.gbModemSet.Controls.Add(Me.cbComSignalRTS)
+        Me.gbModemSet.Controls.Add(Me.cbComSignalDTR)
+        Me.gbModemSet.Location = New System.Drawing.Point(795, 699)
+        Me.gbModemSet.Name = "gbModemSet"
+        Me.gbModemSet.Size = New System.Drawing.Size(117, 65)
+        Me.gbModemSet.TabIndex = 12
+        Me.gbModemSet.TabStop = False
+        Me.gbModemSet.Text = "Установка линий."
+        '
+        'cbComSignalRTS
+        '
+        Me.cbComSignalRTS.AutoSize = True
+        Me.cbComSignalRTS.Location = New System.Drawing.Point(6, 42)
+        Me.cbComSignalRTS.Name = "cbComSignalRTS"
+        Me.cbComSignalRTS.Size = New System.Drawing.Size(60, 17)
+        Me.cbComSignalRTS.TabIndex = 1
+        Me.cbComSignalRTS.Text = "RTS=0"
+        Me.cbComSignalRTS.UseVisualStyleBackColor = True
+        '
+        'cbComSignalDTR
+        '
+        Me.cbComSignalDTR.AutoSize = True
+        Me.cbComSignalDTR.Location = New System.Drawing.Point(6, 19)
+        Me.cbComSignalDTR.Name = "cbComSignalDTR"
+        Me.cbComSignalDTR.Size = New System.Drawing.Size(61, 17)
+        Me.cbComSignalDTR.TabIndex = 0
+        Me.cbComSignalDTR.Text = "DTR=0"
+        Me.cbComSignalDTR.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(918, 796)
+        Me.Controls.Add(Me.gbModemSet)
         Me.Controls.Add(Me.group_0d_0a)
         Me.Controls.Add(Me.gbKey)
         Me.Controls.Add(Me.StatusStrip1)
@@ -756,7 +825,8 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Терминал v1.3.8"
+        Me.Text = "COM port Terminal v1.4.0  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
+            "2022."
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -782,6 +852,8 @@ Partial Class Form1
         Me.gbKey.ResumeLayout(False)
         Me.group_0d_0a.ResumeLayout(False)
         Me.group_0d_0a.PerformLayout()
+        Me.gbModemSet.ResumeLayout(False)
+        Me.gbModemSet.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -848,5 +920,12 @@ Partial Class Form1
     Friend WithEvents cbStrSend As System.Windows.Forms.ComboBox
     Friend WithEvents bt_Load_TXT_File As System.Windows.Forms.Button
     Friend WithEvents btSendStringToHEX As System.Windows.Forms.Button
+    Friend WithEvents tsslComSignalCTS As System.Windows.Forms.ToolStripStatusLabel
+    Friend WithEvents tsslComSignalDSR As System.Windows.Forms.ToolStripStatusLabel
+    Friend WithEvents tsslComSignalRI As System.Windows.Forms.ToolStripStatusLabel
+    Friend WithEvents tsslComSignalCD As System.Windows.Forms.ToolStripStatusLabel
+    Friend WithEvents gbModemSet As System.Windows.Forms.GroupBox
+    Friend WithEvents cbComSignalRTS As System.Windows.Forms.CheckBox
+    Friend WithEvents cbComSignalDTR As System.Windows.Forms.CheckBox
 
 End Class

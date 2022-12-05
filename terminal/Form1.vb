@@ -39,6 +39,23 @@ Public Class Form1
         close = 0
     End Enum
 
+    Enum port_set_dtr_e
+        dtr_1 = 1
+        dtr_0 = 0
+    End Enum
+
+    Enum port_set_rts_e
+        rts_1 = 1
+        rts_0 = 0
+    End Enum
+
+    Structure port_modem_set_signal_st
+        Dim rts As port_set_rts_e
+        Dim dtr As port_set_dtr_e
+    End Structure
+
+    Dim port_modem_set_signal As port_modem_set_signal_st
+
     ' Тип строки для передачи в СОМ порт (ТЕСКТ - как есть или в HEX виде)
     Enum String_send_of_type
         STRING_SEND_TXT = 0
@@ -219,6 +236,10 @@ Public Class Form1
 
             gbTx.Enabled = True
             gbKey.Enabled = True
+            gbModemSet.Enabled = True
+
+            com_port_set_modem_signal_dtr(port_modem_set_signal.dtr)
+            com_port_set_modem_signal_rts(port_modem_set_signal.rts)
 
             cbPorts.Enabled = False ' выключаем выбор номера порта
 
@@ -255,10 +276,11 @@ Public Class Form1
 
         gbTx.Enabled = False ' выключаем передача строки
         gbKey.Enabled = False
+        gbModemSet.Enabled = False
 
         cbPorts.Enabled = True ' включаем выбор номера порта
 
-        Timer3.Enabled = False ' Выключам передачу файла - даже на посреди передачи
+        Timer3.Enabled = False ' Выключам передачу файла - даже посреди передачи
         btFileSend.Text = SEND_FILE_START
 
         Timer2.Enabled = False
@@ -273,11 +295,31 @@ Public Class Form1
         btPOpen.Text = PORT_OPEN
         tbLogRx.AppendText(vbCrLf + cbPorts.SelectedItem + " ЗАКРЫТ --------------------------------------------------" + vbCrLf)
 
+        ' Переводи отображение стороки статуса (сигналов CTS DSR RI CD) в состояние по умолчанию, значения не определены.
+        tsslComSignalCTS.Text = "CTS=x"
+        tsslComSignalCTS.ForeColor = Color.Black
+
+        tsslComSignalDSR.Text = "DSR=x"
+        tsslComSignalDSR.ForeColor = Color.Black
+
+        tsslComSignalRI.Text = "RI=x"
+        tsslComSignalRI.ForeColor = Color.Black
+
+        tsslComSignalCD.Text = "CD=x"
+        tsslComSignalCD.ForeColor = Color.Black
+
     End Sub
 
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'RX_Thread.Priority = ThreadPriority.Highest
+
+        port_modem_set_signal.dtr = port_set_dtr_e.dtr_1
+        cbComSignalDTR.Checked = True
+
+        port_modem_set_signal.rts = port_set_rts_e.rts_1
+        cbComSignalRTS.Checked = True
+
 
         CPortStatus = port_status_e.close
         btPOpen.Text = PORT_OPEN
@@ -366,6 +408,7 @@ Public Class Form1
 
         gbTx.Enabled = False
         gbKey.Enabled = False
+        gbModemSet.Enabled = False
 
         ' настройка струкруры передачи файла
         ReDim f_send_st.buf(file_send_st.BUF_SIZE)
@@ -373,11 +416,6 @@ Public Class Form1
         find_com_port() ' Производим поиск ком портов в системы
 
         ToolTip1.IsBalloon = True ' Подсказка в стиле комикса
-    End Sub
-
-    ' таймер настроен на 10 мс (при 100 мс - неуспевает принимать, теряются данные)
-    Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
-
     End Sub
 
     ' Обработка смены состояния: запись лог файла
@@ -1127,4 +1165,119 @@ Public Class Form1
         End If
 
     End Sub
+
+    ' таймер - опроса состояния служебных линий CTS, DSR, DCD и RI
+    Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
+        Dim status As UInt32 = 0
+
+        If CPortStatus <> port_status_e.open Then
+            Exit Sub
+        End If
+
+        If ComPortGetModemStatus(status) = 0 Then
+            tbLogRx.AppendText(vbCrLf + " ComPortGetModemStatus fail..." + vbCrLf)
+        Else
+            ' CTS -----------------------------------------
+            If status And MS_CTS_ON Then
+                tsslComSignalCTS.Text = "CTS=1"
+                tsslComSignalCTS.ForeColor = Color.Red
+            Else
+                tsslComSignalCTS.Text = "CTS=0"
+                tsslComSignalCTS.ForeColor = Color.Green
+            End If
+
+            ' DSR -----------------------------------------
+            If status And MS_DSR_ON Then
+                tsslComSignalDSR.Text = "DSR=1"
+                tsslComSignalDSR.ForeColor = Color.Red
+            Else
+                tsslComSignalDSR.Text = "DSR=0"
+                tsslComSignalDSR.ForeColor = Color.Green
+            End If
+
+            ' RI ------------------------------------------
+            If status And MS_RING_ON Then
+                tsslComSignalRI.Text = "RI=1"
+                tsslComSignalRI.ForeColor = Color.Red
+            Else
+                tsslComSignalRI.Text = "RI=0"
+                tsslComSignalRI.ForeColor = Color.Green
+            End If
+
+            ' CD ------------------------------------------
+            If status And MS_RLSD_ON Then
+                tsslComSignalCD.Text = "CD=1"
+                tsslComSignalCD.ForeColor = Color.Red
+            Else
+                tsslComSignalCD.Text = "CD=0"
+                tsslComSignalCD.ForeColor = Color.Green
+            End If
+
+        End If
+
+    End Sub
+
+    ' Сигнал смены состояния линии DTR (ручной режим)
+    Private Sub cbComSignalDTR_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cbComSignalDTR.CheckedChanged
+
+        If cbComSignalDTR.Checked = True Then
+            cbComSignalDTR.Text = "DTR=1"
+            port_modem_set_signal.dtr = port_set_dtr_e.dtr_1
+        Else
+            cbComSignalDTR.Text = "DTR=0"
+            port_modem_set_signal.dtr = port_set_dtr_e.dtr_0
+        End If
+
+        If CPortStatus = port_status_e.open Then
+            com_port_set_modem_signal_dtr(port_modem_set_signal.dtr)
+        End If
+
+    End Sub
+
+    ' Сигнал смены состояния линии RTS (ручной режим)
+    Private Sub cbComSignalRTS_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cbComSignalRTS.CheckedChanged
+
+        If cbComSignalRTS.Checked = True Then
+            cbComSignalRTS.Text = "RTS=1"
+            port_modem_set_signal.rts = port_set_rts_e.rts_1
+        Else
+            cbComSignalRTS.Text = "RTS=0"
+            port_modem_set_signal.rts = port_set_rts_e.rts_0
+        End If
+
+        If CPortStatus = port_status_e.open Then
+            com_port_set_modem_signal_rts(port_modem_set_signal.rts)
+        End If
+
+    End Sub
+
+    Private Sub com_port_set_modem_signal_dtr(ByVal dtr As port_set_dtr_e)
+        Dim dtr_set As UInt32
+
+        If dtr = port_set_dtr_e.dtr_1 Then
+            dtr_set = 1
+        Else
+            dtr_set = 0
+        End If
+
+        If ComPortSetDTR(dtr_set) = 0 Then
+            tbLogRx.AppendText(vbCrLf + "ComPortSetDTR fail..." + vbCrLf)
+        End If
+    End Sub
+
+    Private Sub com_port_set_modem_signal_rts(ByVal rts As port_set_rts_e)
+        Dim rts_set As UInt32
+
+        If rts = port_set_rts_e.rts_1 Then
+            rts_set = 1
+        Else
+            rts_set = 0
+        End If
+
+        If ComPortSetRTS(rts_set) = 0 Then
+            tbLogRx.AppendText(vbCrLf + "ComPortSetRTS fail..." + vbCrLf)
+        End If
+    End Sub
+
+
 End Class

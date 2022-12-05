@@ -30,6 +30,19 @@ Module ComPort
     Public Const MARKPARITY = &H3
     Public Const SPACEPARITY = &H4
 
+
+    ' Состояния сигналов CTS DSR RI RLSD - function GetCommModemStatus
+    Public Const MS_CTS_ON = &H10 ' The CTS (clear-to-send) signal is on.
+    Public Const MS_DSR_ON = &H20 ' The DSR (data-set-ready) signal is on.
+    Public Const MS_RING_ON = &H40 ' The ring indicator signal is on.
+    Public Const MS_RLSD_ON = &H80 ' The RLSD (receive-line-signal-detect) signal is on. (CD)
+
+    ' Состояние сигналов RTS, DTR - function EscapeCommFunction
+    Public Const SETRTS = &H3 ' // Set RTS high
+    Public Const CLRRTS = &H4 ' // Set RTS low
+    Public Const SETDTR = &H5 ' // Set DTR high
+    Public Const CLRDTR = &H6 ' // Set DTR low
+
     Declare Function CloseHandle Lib "kernel32" (ByVal hObject As UInt32) As Boolean 'Int32
     Declare Function GetLastError Lib "kernel32" () As UInt32
     Declare Function ReadFile Lib "kernel32" (ByVal hFile As UInt32, ByRef lpBuffer As Byte, ByVal nNumberOfBytesToRead As UInt32, ByRef lpNumberOfBytesRead As UInt32, ByVal lpOverlapped As UInt32) As Int32
@@ -41,6 +54,11 @@ Module ComPort
     Declare Function GetCommState Lib "kernel32" (ByVal hCommDev As Int32, ByRef lpDCB As DCB) As Int32
     Declare Function CreateFile Lib "kernel32" Alias "CreateFileA" (ByVal lpFileName As String, ByVal dwDesiredAccess As Int32, ByVal dwShareMode As UInt32, ByVal lpSecurityAttributes As UInt32, ByVal dwCreationDisposition As UInt32, ByVal dwFlagsAndAttributes As UInt32, ByVal hTemplateFile As UInt32) As Int32
     Declare Function FlushFileBuffers Lib "kernel32" (ByVal hFile As UInt32) As Int32
+    Declare Function GetCommModemStatus Lib "kernel32" (ByVal hFile As UInt32, ByRef lpModemStat As UInt32) As Boolean
+    Declare Function EscapeCommFunction Lib "kernel32" (ByVal hFile As UInt32, ByVal dwFunc As UInt32) As Boolean
+
+
+
 
 
     Structure COMSTAT
@@ -302,5 +320,46 @@ handelwritelpt:
 handelwritelpt:
         Exit Function
     End Function
+
+    '-------------------------------------------------------------------
+    ' Чтение состояния линий CTS, DSR, DCD и RI
+    '
+    '-------------------------------------------------------------------
+    Function ComPortGetModemStatus(ByRef status As UInt32) As Boolean
+
+        Return GetCommModemStatus(ComHandle, status)
+
+    End Function
+
+    '-------------------------------------------------------------------
+    ' Установка линий DTR в заданное состояние
+    '-------------------------------------------------------------------
+    Function ComPortSetDTR(ByRef dtr As UInt32) As Boolean
+
+        If dtr = 0 Then
+            Return EscapeCommFunction(ComHandle, SETDTR)
+        Else
+            Return EscapeCommFunction(ComHandle, CLRDTR)
+        End If
+
+    End Function
+
+    '-------------------------------------------------------------------
+    ' Установка линий RTS в заданное состояние
+    '-------------------------------------------------------------------
+    Function ComPortSetRTS(ByRef rts As UInt32) As Boolean
+
+        If rts = 0 Then
+            Return EscapeCommFunction(ComHandle, SETRTS)
+        Else
+            Return EscapeCommFunction(ComHandle, CLRRTS)
+        End If
+
+    End Function
+
+
+
+
+
 
 End Module
