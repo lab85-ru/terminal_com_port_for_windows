@@ -684,30 +684,38 @@ Partial Class Form1
         '
         'tsslComSignalCTS
         '
+        Me.tsslComSignalCTS.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
+        Me.tsslComSignalCTS.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslComSignalCTS.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
         Me.tsslComSignalCTS.Name = "tsslComSignalCTS"
-        Me.tsslComSignalCTS.Size = New System.Drawing.Size(43, 19)
+        Me.tsslComSignalCTS.Size = New System.Drawing.Size(47, 19)
         Me.tsslComSignalCTS.Text = "CTS=x"
         '
         'tsslComSignalDSR
         '
+        Me.tsslComSignalDSR.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
+        Me.tsslComSignalDSR.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslComSignalDSR.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
         Me.tsslComSignalDSR.Name = "tsslComSignalDSR"
-        Me.tsslComSignalDSR.Size = New System.Drawing.Size(46, 19)
+        Me.tsslComSignalDSR.Size = New System.Drawing.Size(50, 19)
         Me.tsslComSignalDSR.Text = "DSR=x"
         '
         'tsslComSignalRI
         '
+        Me.tsslComSignalRI.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
+        Me.tsslComSignalRI.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslComSignalRI.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
         Me.tsslComSignalRI.Name = "tsslComSignalRI"
-        Me.tsslComSignalRI.Size = New System.Drawing.Size(34, 19)
+        Me.tsslComSignalRI.Size = New System.Drawing.Size(38, 19)
         Me.tsslComSignalRI.Text = "RI=x"
         '
         'tsslComSignalCD
         '
+        Me.tsslComSignalCD.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
+        Me.tsslComSignalCD.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
         Me.tsslComSignalCD.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold)
         Me.tsslComSignalCD.Name = "tsslComSignalCD"
-        Me.tsslComSignalCD.Size = New System.Drawing.Size(38, 19)
+        Me.tsslComSignalCD.Size = New System.Drawing.Size(42, 19)
         Me.tsslComSignalCD.Text = "CD=x"
         '
         'gbKey
@@ -825,7 +833,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "COM port Terminal v1.4.0  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
+        Me.Text = "COM port Terminal v1.4.1  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
             "2022."
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)

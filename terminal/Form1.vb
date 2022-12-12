@@ -301,18 +301,40 @@ Public Class Form1
         tbLogRx.AppendText(vbCrLf + cbPorts.SelectedItem + " ЗАКРЫТ --------------------------------------------------" + vbCrLf)
 
         ' Переводи отображение стороки статуса (сигналов CTS DSR RI CD) в состояние по умолчанию, значения не определены.
+        SetDefaultStatusCtsDsrRiCd()
+
+    End Sub
+
+    '---------------------------------------------------------------------------
+    ' Переводи отображение стороки статуса (сигналов CTS DSR RI CD) в состояние ВКЛ.
+    '---------------------------------------------------------------------------
+    Private Sub SetOnStatusCtsDsrRiCd()
+        tsslComSignalCTS.Enabled = True
+        tsslComSignalDSR.Enabled = True
+        tsslComSignalRI.Enabled = True
+        tsslComSignalCD.Enabled = True
+    End Sub
+
+    '---------------------------------------------------------------------------
+    ' Переводи отображение стороки статуса (сигналов CTS DSR RI CD) в состояние по умолчанию, значения не определены.
+    '---------------------------------------------------------------------------
+    Private Sub SetDefaultStatusCtsDsrRiCd()
+
+        tsslComSignalCTS.Enabled = False
         tsslComSignalCTS.Text = "CTS=x"
         tsslComSignalCTS.ForeColor = Color.Black
 
+        tsslComSignalDSR.Enabled = False
         tsslComSignalDSR.Text = "DSR=x"
         tsslComSignalDSR.ForeColor = Color.Black
 
+        tsslComSignalRI.Enabled = False
         tsslComSignalRI.Text = "RI=x"
         tsslComSignalRI.ForeColor = Color.Black
 
+        tsslComSignalCD.Enabled = False
         tsslComSignalCD.Text = "CD=x"
         tsslComSignalCD.ForeColor = Color.Black
-
     End Sub
 
 
@@ -1176,45 +1198,49 @@ Public Class Form1
         Dim status As UInt32 = 0
 
         If CPortStatus <> port_status_e.open Then
+            SetDefaultStatusCtsDsrRiCd()
             Exit Sub
         End If
 
         If ComPortGetModemStatus(status) = 0 Then
-            tbLogRx.AppendText(vbCrLf + " ComPortGetModemStatus fail..." + vbCrLf)
+            SetDefaultStatusCtsDsrRiCd()
+            'tbLogRx.AppendText(vbCrLf + " ComPortGetModemStatus fail..." + vbCrLf)
         Else
+            SetOnStatusCtsDsrRiCd() ' Включаем страку статуса
+
             ' CTS -----------------------------------------
             If status And MS_CTS_ON Then
-                tsslComSignalCTS.Text = "CTS=1"
+                tsslComSignalCTS.Text = "CTS=0"
                 tsslComSignalCTS.ForeColor = Color.Red
             Else
-                tsslComSignalCTS.Text = "CTS=0"
+                tsslComSignalCTS.Text = "CTS=1"
                 tsslComSignalCTS.ForeColor = Color.Green
             End If
 
             ' DSR -----------------------------------------
             If status And MS_DSR_ON Then
-                tsslComSignalDSR.Text = "DSR=1"
+                tsslComSignalDSR.Text = "DSR=0"
                 tsslComSignalDSR.ForeColor = Color.Red
             Else
-                tsslComSignalDSR.Text = "DSR=0"
+                tsslComSignalDSR.Text = "DSR=1"
                 tsslComSignalDSR.ForeColor = Color.Green
             End If
 
             ' RI ------------------------------------------
             If status And MS_RING_ON Then
-                tsslComSignalRI.Text = "RI=1"
+                tsslComSignalRI.Text = "RI=0"
                 tsslComSignalRI.ForeColor = Color.Red
             Else
-                tsslComSignalRI.Text = "RI=0"
+                tsslComSignalRI.Text = "RI=1"
                 tsslComSignalRI.ForeColor = Color.Green
             End If
 
             ' CD ------------------------------------------
             If status And MS_RLSD_ON Then
-                tsslComSignalCD.Text = "CD=1"
+                tsslComSignalCD.Text = "CD=0"
                 tsslComSignalCD.ForeColor = Color.Red
             Else
-                tsslComSignalCD.Text = "CD=0"
+                tsslComSignalCD.Text = "CD=1"
                 tsslComSignalCD.ForeColor = Color.Green
             End If
 
