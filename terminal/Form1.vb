@@ -158,9 +158,14 @@ Public Class Form1
             tbLogRx.AppendText(port + vbCrLf)
             cbPorts.Items.Add(port)
         Next port
-        tbLogRx.AppendText(STR_TIRE + vbCrLf)
 
-        cbPorts.SelectedIndex = 0 ' Всегда выбираем самый первый порт, для заполнения поля а то ПУСТОЕ плохо смотриться
+        If Ports.Length = 0 Then
+            tbLogRx.AppendText("ПУСТО !!! В системе нет портов !!!" + vbCrLf)
+        Else
+            cbPorts.SelectedIndex = 0 ' Всегда выбираем самый первый порт, для заполнения поля а то ПУСТОЕ плохо смотриться
+        End If
+
+        tbLogRx.AppendText(STR_TIRE + vbCrLf)
 
         GetAllSerialPortsName()
         tbLogRx.AppendText(STR_TIRE + vbCrLf)
