@@ -5,13 +5,6 @@ Imports System.Management
 Imports System.Threading
 
 
-'
-' Необходимо реализовать:
-' + передачу строки в нех кодировка как в фаре
-' - прием ESC последовательностей
-
-
-
 Public Class Form1
 
     Dim flag_thread_stop As UInteger = 0 ' остановка потока
@@ -66,13 +59,9 @@ Public Class Form1
     Dim com_port_parity As UInt32
     Dim com_port_stop_bit As UInt32
 
-    ' промежуточный линейный буфер для приема массива из порта
-    Const BUFIN_SIZE = 2048
-    Dim bufin(BUFIN_SIZE) As Byte     ' промежуточный буфер
-
     Const BUF_STR_TX_SIZE = 128
     Dim buf_str_tx(BUF_STR_TX_SIZE) As Byte  ' буфер для передачи строки
-    Dim buf_str_tx_n As Integer              ' количество пеедаваемых байт
+    Dim buf_str_tx_n As Integer              ' количество передаваемых байт
 
     Dim flag_write_log As Boolean      ' = 1 запись лога в файл
     Dim Ports As String()              ' список портов в системе
@@ -122,9 +111,16 @@ Public Class Form1
         delay
     End Enum
 
-
     Dim f_send_st As file_send_st
 
+    Dim lock_io_data As New Object
+
+    Const UART_RX_DATA_IN_SIZE = 16384 ' максимальный размер буфера
+    Dim uart_rx_data_in() As Byte ' промежуточный линейный буфер для приема массива из порта
+
+    Const UART_RX_DATA_OUT_SIZE = 2048 ' максимальный размер буфера
+    Dim uart_rx_data_out() As Byte ' промежуточный линейный буфер для приема массива из очереди (для вывода на экран/файл)
+    Dim queue_rx As queue_buf_t
 
     '--------------------------------------------------------------
     ' Запрос списка СОМ портов в системе
@@ -274,6 +270,13 @@ Public Class Form1
         flag_thread_stop = 1
         RX_Thread.Join()
 
+        queue_rx.din = 0
+        queue_rx.dout = 0
+
+        tx_counter_global = 0
+        rx_counter_global = 0
+        trx_count_update() ' обновление счетчиков TX RX в строке статуса
+
         ' Включаем меню даем выбрать
         gbSetPortSpeed.Enabled = True
         gbSetPortStopBit.Enabled = True
@@ -339,7 +342,12 @@ Public Class Form1
 
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        'RX_Thread.Priority = ThreadPriority.Highest
+
+        queue_rx.len = 16 * 1024 * 1024
+        ReDim queue_rx.queue(queue_rx.len - 1)
+        ReDim uart_rx_data_in(UART_RX_DATA_IN_SIZE - 1)
+        ReDim uart_rx_data_out(UART_RX_DATA_OUT_SIZE - 1)
+
 
         port_modem_set_signal.dtr = port_set_dtr_e.dtr_1
         cbComSignalDTR.Checked = True
@@ -426,7 +434,7 @@ Public Class Form1
 
         ' изменяет размер метки в строке статуса
         tsslRxCounter.AutoSize = False
-        Dim slab As Size = New Size(100, tsslRxCounter.Size.Height)
+        Dim slab As Size = New Size(200, tsslRxCounter.Size.Height)
         tsslRxCounter.Size = slab
 
         tsslTxCounter.AutoSize = False
@@ -668,7 +676,7 @@ Public Class Form1
 
     ' обновление счетчиков TX RX в строке статуса
     Sub trx_count_update()
-        tsslRxCounter.Text = RX_COUNT_TXT + Str(rx_counter_global)
+        tsslRxCounter.Text = RX_COUNT_TXT + Str(rx_counter_global) + " / QBuf: " + Str(get_data_size_queue(queue_rx))
         tsslTxCounter.Text = TX_COUNT_TXT + Str(tx_counter_global)
     End Sub
 
@@ -1066,20 +1074,46 @@ Public Class Form1
         print_log(s)
 
     End Sub
+
     '--------------------------------------------------------------------------
-    ' Второй поток приема данных из СОМ порта
+    ' Второй поток приема данных из СОМ порта и запись принятых данных в очередь
     '--------------------------------------------------------------------------
     Sub Thread_com_port_rx()
+        Dim res As Int32          ' != 0 ошибка
+        Dim din As UInt32         ' количество принятых данных
 
         Do While flag_thread_stop = 0
+            Thread.Sleep(1)
 
-            Thread.Sleep(2)
-
-            If InvokeRequired Then
-                BeginInvoke(New MethodInvoker(AddressOf decode_rx_com_port_data))
+            ' ----- ПРИЕМ ДАННЫХ -----------
+            din = UART_RX_DATA_IN_SIZE
+            res = ComPortRead(uart_rx_data_in, din)
+            If res <> 0 Then ' Произошла ошибка - закрываем порт
+                If InvokeRequired Then
+                    BeginInvoke(New MethodInvoker(AddressOf GlobalComPortClose))
+                End If
+            Else
+                If din <> 0 Then
+                    SyncLock lock_io_data
+                        If get_free_size_queue(queue_rx) > din Then
+                            push_data_queue(queue_rx, uart_rx_data_in, din)
+                        End If
+                    End SyncLock
+                End If
             End If
 
+            'If InvokeRequired Then
+            'BeginInvoke(New MethodInvoker(AddressOf decode_rx_com_port_data))
+            'End If
+
         Loop
+    End Sub
+
+    '--------------------------------------------------------------------------
+    ' Таймер вывода - в окно принятого массива
+    '--------------------------------------------------------------------------
+    Private Sub Timer4_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer4.Tick
+        decode_rx_com_port_data()
     End Sub
 
     '--------------------------------------------------------------------------
@@ -1097,46 +1131,41 @@ Public Class Form1
         Dim l_n2 As Integer = 0   ' количество линий в строке (для расчета)
         Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
         Dim din As UInt32         ' количество пришедших данных
-        Dim res As Int32          ' != 0 ошибка
-
-        'If CPortStatus = port_status_e.close Then
-        'Exit Sub
-        'End If
 
         ' времы выполнения
         'Dim TStart As Date = Now
         'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & " ms" & vbCrLf)
-
-        ' ----- ПРИЕМ ДАННЫХ -----------
-        din = BUFIN_SIZE
-        res = ComPortRead(bufin, din)
-        If res <> 0 Then ' Произошда ошибка - закрываем порт
-            GlobalComPortClose()
-        End If
-
-
         'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "RX ms" & vbCrLf)
 
-        If din = 0 Then ' Пусто нет данных выходим
-            Exit Sub
-        End If
+        SyncLock lock_io_data
+            din = get_data_size_queue(queue_rx)
+            If din = 0 Then
+                Exit Sub
+            End If
 
-        'tbLogTx.AppendText(Str(din) + vbCrLf)
+            ' Ограничиваем длинну извлекаемых данных (из очереди) за 1 раз,
+            ' не более UART_RX_DATA_IN_SIZE байт (чтоб не тормазило при выводе и не вешало интерфейс)
+            If din > UART_RX_DATA_OUT_SIZE Then
+                din = UART_RX_DATA_OUT_SIZE
+            End If
+            pop_data_queue(queue_rx, uart_rx_data_out, din)
+
+        End SyncLock
 
         rx_counter_global = rx_counter_global + din
 
         ' Запись в лог файл Приема
         If flag_write_log = True And din > 0 Then
-            f_log.Write(bufin, 0, din)
+            f_log.Write(uart_rx_data_out, 0, din)
         End If
 
         ' --------- ОБРАБОТКА ПРИНЯТЫХ БАННЫХ -----------------
         If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
-            s_out = ConvArrayByteToHEX(bufin, din)
+            s_out = ConvArrayByteToHEX(uart_rx_data_out, din)
 
         Else                               ' ASCII ------------------------------------------------------------------
             For i = 0 To din - 1
-                ub = bufin(i)
+                ub = uart_rx_data_out(i)
 
                 Select Case ub
                     Case &H0 To &H9, &HB, &HC, &HE To &H19
@@ -1309,6 +1338,5 @@ Public Class Form1
             tbLogRx.AppendText(vbCrLf + "ComPortSetRTS fail..." + vbCrLf)
         End If
     End Sub
-
 
 End Class

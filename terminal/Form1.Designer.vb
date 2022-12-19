@@ -93,6 +93,7 @@ Partial Class Form1
         Me.gbModemSet = New System.Windows.Forms.GroupBox
         Me.cbComSignalRTS = New System.Windows.Forms.CheckBox
         Me.cbComSignalDTR = New System.Windows.Forms.CheckBox
+        Me.Timer4 = New System.Windows.Forms.Timer(Me.components)
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -810,6 +811,11 @@ Partial Class Form1
         Me.cbComSignalDTR.Text = "DTR=0"
         Me.cbComSignalDTR.UseVisualStyleBackColor = True
         '
+        'Timer4
+        '
+        Me.Timer4.Enabled = True
+        Me.Timer4.Interval = 10
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -833,7 +839,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "COM port Terminal v1.4.1  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
+        Me.Text = "COM port Terminal v1.5.0  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
             "2022."
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
@@ -935,5 +941,6 @@ Partial Class Form1
     Friend WithEvents gbModemSet As System.Windows.Forms.GroupBox
     Friend WithEvents cbComSignalRTS As System.Windows.Forms.CheckBox
     Friend WithEvents cbComSignalDTR As System.Windows.Forms.CheckBox
+    Friend WithEvents Timer4 As System.Windows.Forms.Timer
 
 End Class
