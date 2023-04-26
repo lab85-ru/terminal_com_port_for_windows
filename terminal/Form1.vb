@@ -122,6 +122,15 @@ Public Class Form1
     Dim uart_rx_data_out() As Byte ' промежуточный линейный буфер для приема массива из очереди (для вывода на экран/файл)
     Dim queue_rx As queue_buf_t
 
+    Enum print_log_paused_e ' Состояние - Поставить вывод в консоль на паузу
+        print_on
+        print_pause
+    End Enum
+    Dim flag_print_log_paused As print_log_paused_e = print_log_paused_e.print_on
+    Dim txt_print_log_pause As String = "Пауза" '"Вывод - Пауза"
+    Dim txt_print_log_run As String = "Продолжить" ' "Вывод - Продолжить"
+
+
     '--------------------------------------------------------------
     ' Запрос списка СОМ портов в системе
     '--------------------------------------------------------------
@@ -156,7 +165,7 @@ Public Class Form1
         Next port
 
         If Ports.Length = 0 Then
-            tbLogRx.AppendText("ПУСТО !!! В системе нет портов !!!" + vbCrLf)
+            tbLogRx.AppendText("!!! ПУСТО !!! В системе нет COM портов !!!" + vbCrLf)
         Else
             cbPorts.SelectedIndex = 0 ' Всегда выбираем самый первый порт, для заполнения поля а то ПУСТОЕ плохо смотриться
         End If
@@ -178,6 +187,11 @@ Public Class Form1
         Dim st_s As stopbit_st
         Dim irb As RadioButton
         Dim com_port_parameter As String = ""
+
+        ' Выключаем миганние красным параметров
+        flag_print_log_paused = print_log_paused_e.print_on
+        tsslRxCounter.ForeColor = Color.Black
+        btPrintLogPaused.ForeColor = Color.Black
 
         If cbPorts.SelectedItem <> "" And CPortStatus = port_status_e.close Then
 
@@ -238,6 +252,7 @@ Public Class Form1
             gbTx.Enabled = True
             gbKey.Enabled = True
             gbModemSet.Enabled = True
+            btPrintLogPaused.Enabled = True
 
             com_port_set_modem_signal_dtr(port_modem_set_signal.dtr)
             com_port_set_modem_signal_rts(port_modem_set_signal.rts)
@@ -285,6 +300,7 @@ Public Class Form1
         gbTx.Enabled = False ' выключаем передача строки
         gbKey.Enabled = False
         gbModemSet.Enabled = False
+        btPrintLogPaused.Enabled = False
 
         cbPorts.Enabled = True ' включаем выбор номера порта
 
@@ -434,11 +450,11 @@ Public Class Form1
 
         ' изменяет размер метки в строке статуса
         tsslRxCounter.AutoSize = False
-        Dim slab As Size = New Size(200, tsslRxCounter.Size.Height)
+        Dim slab As Size = New Size(250, tsslRxCounter.Size.Height)
         tsslRxCounter.Size = slab
 
         tsslTxCounter.AutoSize = False
-        slab = New Size(100, tsslRxCounter.Size.Height)
+        slab = New Size(120, tsslTxCounter.Size.Height)
         tsslTxCounter.Size = slab
 
         gbTx.Enabled = False
@@ -451,6 +467,12 @@ Public Class Form1
         find_com_port() ' Производим поиск ком портов в системы
 
         ToolTip1.IsBalloon = True ' Подсказка в стиле комикса
+
+        btPrintLogPaused.Text = txt_print_log_pause
+        flag_print_log_paused = print_log_paused_e.print_on
+
+        btPrintLogPaused.Enabled = False
+
     End Sub
 
     ' Обработка смены состояния: запись лог файла
@@ -676,8 +698,8 @@ Public Class Form1
 
     ' обновление счетчиков TX RX в строке статуса
     Sub trx_count_update()
-        tsslRxCounter.Text = RX_COUNT_TXT + Str(rx_counter_global) + " / QBuf: " + Str(get_data_size_queue(queue_rx))
-        tsslTxCounter.Text = TX_COUNT_TXT + Str(tx_counter_global)
+        tsslRxCounter.Text = RX_COUNT_TXT + Str(rx_counter_global).PadLeft(10) + " / QBuf: " + Str(get_data_size_queue(queue_rx)).PadLeft(10)
+        tsslTxCounter.Text = TX_COUNT_TXT + Str(tx_counter_global).PadLeft(10)
     End Sub
 
     ' Удаление строк
@@ -1113,6 +1135,12 @@ Public Class Form1
     ' Таймер вывода - в окно принятого массива
     '--------------------------------------------------------------------------
     Private Sub Timer4_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer4.Tick
+        ' Если стоит флаг запрет вывода то не выводить в консоль
+        ' Данные накапливаются в промежуточном 
+        If flag_print_log_paused = print_log_paused_e.print_pause Then
+            Exit Sub
+        End If
+
         decode_rx_com_port_data()
     End Sub
 
@@ -1337,6 +1365,36 @@ Public Class Form1
         If ComPortSetRTS(rts_set) = 0 Then
             tbLogRx.AppendText(vbCrLf + "ComPortSetRTS fail..." + vbCrLf)
         End If
+    End Sub
+
+    ' Вывод мигающей надписи
+    Private Sub Timer5_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer5.Tick
+
+        If flag_print_log_paused = print_log_paused_e.print_pause Then
+            If btPrintLogPaused.ForeColor = Color.Red Then
+                btPrintLogPaused.ForeColor = Color.Black
+                tsslRxCounter.ForeColor = Color.Black
+            Else
+                btPrintLogPaused.ForeColor = Color.Red
+                tsslRxCounter.ForeColor = Color.Red
+            End If
+        End If
+
+    End Sub
+
+    ' Вывод лога - на паузу !
+    Private Sub btPrintLogPaused_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btPrintLogPaused.Click
+
+        If flag_print_log_paused = print_log_paused_e.print_on Then
+            flag_print_log_paused = print_log_paused_e.print_pause
+            btPrintLogPaused.Text = txt_print_log_run
+        Else
+            flag_print_log_paused = print_log_paused_e.print_on
+            btPrintLogPaused.Text = txt_print_log_pause
+            btPrintLogPaused.ForeColor = Color.Black
+            tsslRxCounter.ForeColor = Color.Black
+        End If
+
     End Sub
 
 End Class

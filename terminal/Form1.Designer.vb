@@ -29,6 +29,7 @@ Partial Class Form1
         Me.btPOpen = New System.Windows.Forms.Button
         Me.btScanComPort = New System.Windows.Forms.Button
         Me.gbRxLog = New System.Windows.Forms.GroupBox
+        Me.btPrintLogPaused = New System.Windows.Forms.Button
         Me.btClearRxLog = New System.Windows.Forms.Button
         Me.tbLogRx = New System.Windows.Forms.TextBox
         Me.SerialPort1 = New System.IO.Ports.SerialPort(Me.components)
@@ -94,6 +95,7 @@ Partial Class Form1
         Me.cbComSignalRTS = New System.Windows.Forms.CheckBox
         Me.cbComSignalDTR = New System.Windows.Forms.CheckBox
         Me.Timer4 = New System.Windows.Forms.Timer(Me.components)
+        Me.Timer5 = New System.Windows.Forms.Timer(Me.components)
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -156,6 +158,7 @@ Partial Class Form1
         '
         'gbRxLog
         '
+        Me.gbRxLog.Controls.Add(Me.btPrintLogPaused)
         Me.gbRxLog.Controls.Add(Me.btClearRxLog)
         Me.gbRxLog.Controls.Add(Me.tbLogRx)
         Me.gbRxLog.Location = New System.Drawing.Point(12, 263)
@@ -164,6 +167,17 @@ Partial Class Form1
         Me.gbRxLog.TabIndex = 1
         Me.gbRxLog.TabStop = False
         Me.gbRxLog.Text = "Прием"
+        '
+        'btPrintLogPaused
+        '
+        Me.btPrintLogPaused.Location = New System.Drawing.Point(60, 0)
+        Me.btPrintLogPaused.Name = "btPrintLogPaused"
+        Me.btPrintLogPaused.Size = New System.Drawing.Size(159, 23)
+        Me.btPrintLogPaused.TabIndex = 3
+        Me.btPrintLogPaused.Text = "Вывод - Пауза"
+        Me.ToolTip1.SetToolTip(Me.btPrintLogPaused, "Пауза - вывода в окно приема. Принятые данные будут накапливаться в промежуточном" & _
+                " буфере.")
+        Me.btPrintLogPaused.UseVisualStyleBackColor = True
         '
         'btClearRxLog
         '
@@ -666,16 +680,18 @@ Partial Class Form1
         '
         Me.tsslRxCounter.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
         Me.tsslRxCounter.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
+        Me.tsslRxCounter.Font = New System.Drawing.Font("Consolas", 9.0!)
         Me.tsslRxCounter.Name = "tsslRxCounter"
-        Me.tsslRxCounter.Size = New System.Drawing.Size(28, 19)
+        Me.tsslRxCounter.Size = New System.Drawing.Size(32, 19)
         Me.tsslRxCounter.Text = "RX:"
         '
         'tsslTxCounter
         '
         Me.tsslTxCounter.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
         Me.tsslTxCounter.BorderStyle = System.Windows.Forms.Border3DStyle.Etched
+        Me.tsslTxCounter.Font = New System.Drawing.Font("Consolas", 9.0!)
         Me.tsslTxCounter.Name = "tsslTxCounter"
-        Me.tsslTxCounter.Size = New System.Drawing.Size(28, 19)
+        Me.tsslTxCounter.Size = New System.Drawing.Size(32, 19)
         Me.tsslTxCounter.Text = "TX:"
         '
         'tspbBar
@@ -816,6 +832,11 @@ Partial Class Form1
         Me.Timer4.Enabled = True
         Me.Timer4.Interval = 10
         '
+        'Timer5
+        '
+        Me.Timer5.Enabled = True
+        Me.Timer5.Interval = 1000
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -839,8 +860,8 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "COM port Terminal v1.5.0  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
-            "2022."
+        Me.Text = "COM port Terminal v1.5.1  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
+            "2023."
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -942,5 +963,7 @@ Partial Class Form1
     Friend WithEvents cbComSignalRTS As System.Windows.Forms.CheckBox
     Friend WithEvents cbComSignalDTR As System.Windows.Forms.CheckBox
     Friend WithEvents Timer4 As System.Windows.Forms.Timer
+    Friend WithEvents btPrintLogPaused As System.Windows.Forms.Button
+    Friend WithEvents Timer5 As System.Windows.Forms.Timer
 
 End Class
