@@ -1374,9 +1374,11 @@ Public Class Form1
             If btPrintLogPaused.ForeColor = Color.Red Then
                 btPrintLogPaused.ForeColor = Color.Black
                 tsslRxCounter.ForeColor = Color.Black
+                trx_count_update() ' обновление счетчиков TX RX в строке статуса
             Else
                 btPrintLogPaused.ForeColor = Color.Red
                 tsslRxCounter.ForeColor = Color.Red
+                trx_count_update() ' обновление счетчиков TX RX в строке статуса
             End If
         End If
 
