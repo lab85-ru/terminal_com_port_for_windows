@@ -860,7 +860,7 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "COM port Terminal v1.5.1  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
+        Me.Text = "COM port Terminal v1.6.0  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
             "2023."
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)

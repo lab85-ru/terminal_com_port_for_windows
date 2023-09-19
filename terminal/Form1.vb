@@ -243,6 +243,8 @@ Public Class Form1
             rx_counter_global = 0 ' Сбрассываем счетчик принятых и переданных байт
             tx_counter_global = 0
 
+            ' ВЫключаем кнопку Поск СОМ портов в системе
+            btScanComPort.Enabled = False
 
             ' Гасим меню недаем выбрать- пока не закроют порт
             gbSetPortSpeed.Enabled = False
@@ -291,6 +293,9 @@ Public Class Form1
         tx_counter_global = 0
         rx_counter_global = 0
         trx_count_update() ' обновление счетчиков TX RX в строке статуса
+
+        ' Включаем кнопку Поск СОМ портов в системе
+        btScanComPort.Enabled = True
 
         ' Включаем меню даем выбрать
         gbSetPortSpeed.Enabled = True
