@@ -65,6 +65,7 @@ Partial Class Form1
         Me.rbTypeTx1 = New System.Windows.Forms.RadioButton
         Me.cbStrSend = New System.Windows.Forms.ComboBox
         Me.gbStringEnd = New System.Windows.Forms.GroupBox
+        Me.rbAddStrEnd0A = New System.Windows.Forms.RadioButton
         Me.rbAddStrEnd00 = New System.Windows.Forms.RadioButton
         Me.rbAddStrEnd0D0A = New System.Windows.Forms.RadioButton
         Me.rbAddStrEnd0D = New System.Windows.Forms.RadioButton
@@ -385,10 +386,10 @@ Partial Class Form1
         Me.gbSetPortStopBit.Controls.Add(Me.rbStopBit1)
         Me.gbSetPortStopBit.Location = New System.Drawing.Point(406, 8)
         Me.gbSetPortStopBit.Name = "gbSetPortStopBit"
-        Me.gbSetPortStopBit.Size = New System.Drawing.Size(68, 93)
+        Me.gbSetPortStopBit.Size = New System.Drawing.Size(50, 93)
         Me.gbSetPortStopBit.TabIndex = 4
         Me.gbSetPortStopBit.TabStop = False
-        Me.gbSetPortStopBit.Text = "Стоп бит"
+        Me.gbSetPortStopBit.Text = "Стоп"
         '
         'rbStopBit15
         '
@@ -476,9 +477,9 @@ Partial Class Form1
         Me.gbTx.Controls.Add(Me.gbTypeTxStr)
         Me.gbTx.Controls.Add(Me.cbStrSend)
         Me.gbTx.Controls.Add(Me.gbStringEnd)
-        Me.gbTx.Location = New System.Drawing.Point(480, 12)
+        Me.gbTx.Location = New System.Drawing.Point(462, 8)
         Me.gbTx.Name = "gbTx"
-        Me.gbTx.Size = New System.Drawing.Size(431, 90)
+        Me.gbTx.Size = New System.Drawing.Size(449, 94)
         Me.gbTx.TabIndex = 7
         Me.gbTx.TabStop = False
         Me.gbTx.Text = "Передача строки"
@@ -489,16 +490,16 @@ Partial Class Form1
         Me.gbTypeTxStr.Controls.Add(Me.Label1)
         Me.gbTypeTxStr.Controls.Add(Me.rbTypeTxWhile)
         Me.gbTypeTxStr.Controls.Add(Me.rbTypeTx1)
-        Me.gbTypeTxStr.Location = New System.Drawing.Point(201, 16)
+        Me.gbTypeTxStr.Location = New System.Drawing.Point(240, 16)
         Me.gbTypeTxStr.Name = "gbTypeTxStr"
-        Me.gbTypeTxStr.Size = New System.Drawing.Size(208, 37)
+        Me.gbTypeTxStr.Size = New System.Drawing.Size(203, 37)
         Me.gbTypeTxStr.TabIndex = 3
         Me.gbTypeTxStr.TabStop = False
         Me.gbTypeTxStr.Text = "Сколько раз передавать"
         '
         'tbTxDelay
         '
-        Me.tbTxDelay.Location = New System.Drawing.Point(144, 13)
+        Me.tbTxDelay.Location = New System.Drawing.Point(132, 13)
         Me.tbTxDelay.Mask = "00000"
         Me.tbTxDelay.Name = "tbTxDelay"
         Me.tbTxDelay.Size = New System.Drawing.Size(40, 20)
@@ -510,7 +511,7 @@ Partial Class Form1
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(181, 16)
+        Me.Label1.Location = New System.Drawing.Point(176, 16)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(21, 13)
         Me.Label1.TabIndex = 3
@@ -519,12 +520,12 @@ Partial Class Form1
         'rbTypeTxWhile
         '
         Me.rbTypeTxWhile.AutoSize = True
-        Me.rbTypeTxWhile.Location = New System.Drawing.Point(76, 14)
+        Me.rbTypeTxWhile.Location = New System.Drawing.Point(64, 14)
         Me.rbTypeTxWhile.Name = "rbTypeTxWhile"
-        Me.rbTypeTxWhile.Size = New System.Drawing.Size(62, 17)
+        Me.rbTypeTxWhile.Size = New System.Drawing.Size(65, 17)
         Me.rbTypeTxWhile.TabIndex = 1
         Me.rbTypeTxWhile.TabStop = True
-        Me.rbTypeTxWhile.Text = "Повтор"
+        Me.rbTypeTxWhile.Text = "Повтор:"
         Me.ToolTip1.SetToolTip(Me.rbTypeTxWhile, "Непрерывная передача строки.")
         Me.rbTypeTxWhile.UseVisualStyleBackColor = True
         '
@@ -545,26 +546,39 @@ Partial Class Form1
         Me.cbStrSend.FormattingEnabled = True
         Me.cbStrSend.Location = New System.Drawing.Point(6, 60)
         Me.cbStrSend.Name = "cbStrSend"
-        Me.cbStrSend.Size = New System.Drawing.Size(403, 21)
+        Me.cbStrSend.Size = New System.Drawing.Size(437, 21)
         Me.cbStrSend.TabIndex = 12
         '
         'gbStringEnd
         '
+        Me.gbStringEnd.Controls.Add(Me.rbAddStrEnd0A)
         Me.gbStringEnd.Controls.Add(Me.rbAddStrEnd00)
         Me.gbStringEnd.Controls.Add(Me.rbAddStrEnd0D0A)
         Me.gbStringEnd.Controls.Add(Me.rbAddStrEnd0D)
         Me.gbStringEnd.Controls.Add(Me.rbAddStrEndClear)
         Me.gbStringEnd.Location = New System.Drawing.Point(6, 16)
         Me.gbStringEnd.Name = "gbStringEnd"
-        Me.gbStringEnd.Size = New System.Drawing.Size(189, 37)
+        Me.gbStringEnd.Size = New System.Drawing.Size(228, 37)
         Me.gbStringEnd.TabIndex = 2
         Me.gbStringEnd.TabStop = False
         Me.gbStringEnd.Text = "Добавить в конец строки"
         '
+        'rbAddStrEnd0A
+        '
+        Me.rbAddStrEnd0A.AutoSize = True
+        Me.rbAddStrEnd0A.Location = New System.Drawing.Point(76, 12)
+        Me.rbAddStrEnd0A.Name = "rbAddStrEnd0A"
+        Me.rbAddStrEnd0A.Size = New System.Drawing.Size(38, 17)
+        Me.rbAddStrEnd0A.TabIndex = 4
+        Me.rbAddStrEnd0A.TabStop = True
+        Me.rbAddStrEnd0A.Text = "0A"
+        Me.ToolTip1.SetToolTip(Me.rbAddStrEnd0A, "Добавление в конец строки сода 0x0A")
+        Me.rbAddStrEnd0A.UseVisualStyleBackColor = True
+        '
         'rbAddStrEnd00
         '
         Me.rbAddStrEnd00.AutoSize = True
-        Me.rbAddStrEnd00.Location = New System.Drawing.Point(149, 14)
+        Me.rbAddStrEnd00.Location = New System.Drawing.Point(185, 12)
         Me.rbAddStrEnd00.Name = "rbAddStrEnd00"
         Me.rbAddStrEnd00.Size = New System.Drawing.Size(37, 17)
         Me.rbAddStrEnd00.TabIndex = 3
@@ -576,7 +590,7 @@ Partial Class Form1
         'rbAddStrEnd0D0A
         '
         Me.rbAddStrEnd0D0A.AutoSize = True
-        Me.rbAddStrEnd0D0A.Location = New System.Drawing.Point(85, 14)
+        Me.rbAddStrEnd0D0A.Location = New System.Drawing.Point(121, 12)
         Me.rbAddStrEnd0D0A.Name = "rbAddStrEnd0D0A"
         Me.rbAddStrEnd0D0A.Size = New System.Drawing.Size(58, 17)
         Me.rbAddStrEnd0D0A.TabIndex = 2
@@ -588,25 +602,25 @@ Partial Class Form1
         'rbAddStrEnd0D
         '
         Me.rbAddStrEnd0D.AutoSize = True
-        Me.rbAddStrEnd0D.Location = New System.Drawing.Point(40, 14)
+        Me.rbAddStrEnd0D.Location = New System.Drawing.Point(31, 12)
         Me.rbAddStrEnd0D.Name = "rbAddStrEnd0D"
         Me.rbAddStrEnd0D.Size = New System.Drawing.Size(39, 17)
         Me.rbAddStrEnd0D.TabIndex = 1
         Me.rbAddStrEnd0D.TabStop = True
         Me.rbAddStrEnd0D.Text = "0D"
-        Me.ToolTip1.SetToolTip(Me.rbAddStrEnd0D, "Добавление в конец строки сода 0x0D (перевод строки)")
+        Me.ToolTip1.SetToolTip(Me.rbAddStrEnd0D, "Добавление в конец строки сода 0x0D")
         Me.rbAddStrEnd0D.UseVisualStyleBackColor = True
         '
         'rbAddStrEndClear
         '
         Me.rbAddStrEndClear.AutoSize = True
-        Me.rbAddStrEndClear.Location = New System.Drawing.Point(6, 14)
+        Me.rbAddStrEndClear.Location = New System.Drawing.Point(0, 12)
         Me.rbAddStrEndClear.Name = "rbAddStrEndClear"
         Me.rbAddStrEndClear.Size = New System.Drawing.Size(28, 17)
         Me.rbAddStrEndClear.TabIndex = 0
         Me.rbAddStrEndClear.TabStop = True
         Me.rbAddStrEndClear.Text = "-"
-        Me.ToolTip1.SetToolTip(Me.rbAddStrEndClear, "Строка остается без изменений.")
+        Me.ToolTip1.SetToolTip(Me.rbAddStrEndClear, "Строка остается без изменений. Как есть.")
         Me.rbAddStrEndClear.UseVisualStyleBackColor = True
         '
         'btSendString
@@ -860,8 +874,8 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "COM port Terminal v1.6.0  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
-            "2023."
+        Me.Text = "COM port Terminal v1.6.1  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
+            "2024."
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
@@ -965,5 +979,6 @@ Partial Class Form1
     Friend WithEvents Timer4 As System.Windows.Forms.Timer
     Friend WithEvents btPrintLogPaused As System.Windows.Forms.Button
     Friend WithEvents Timer5 As System.Windows.Forms.Timer
+    Friend WithEvents rbAddStrEnd0A As System.Windows.Forms.RadioButton
 
 End Class

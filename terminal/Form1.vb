@@ -430,18 +430,21 @@ Public Class Form1
         rbStopBit_array(2).rb = rbStopBit2
         rbStopBit_array(2).s = TWOSTOPBITS
 
-        ReDim rbAddEndStr_array(4)
+        ReDim rbAddEndStr_array(5)
         rbAddEndStr_array(0).rb = rbAddStrEndClear
         rbAddEndStr_array(0).s = ""
 
         rbAddEndStr_array(1).rb = rbAddStrEnd0D
         rbAddEndStr_array(1).s = Chr(&HD)
 
-        rbAddEndStr_array(2).rb = rbAddStrEnd0D0A
-        rbAddEndStr_array(2).s = Chr(&HD) + Chr(&HA)
+        rbAddEndStr_array(2).rb = rbAddStrEnd0A
+        rbAddEndStr_array(2).s = Chr(&HA)
 
-        rbAddEndStr_array(3).rb = rbAddStrEnd00
-        rbAddEndStr_array(3).s = Chr(&H0)
+        rbAddEndStr_array(3).rb = rbAddStrEnd0D0A
+        rbAddEndStr_array(3).s = Chr(&HD) + Chr(&HA)
+
+        rbAddEndStr_array(4).rb = rbAddStrEnd00
+        rbAddEndStr_array(4).s = Chr(&H0)
 
         rbAddStrEndClear.Checked = True
 
@@ -602,7 +605,7 @@ Public Class Form1
             buf_str_tx_n = buf_str_tx_n + 1
         Next
 
-        ' добавить символы в конец строки (-, 0D, 0D0A, 00)
+        ' добавить символы в конец строки (-, 0D, 0A, 0D0A, 00)
         For Each rba In rbAddEndStr_array
             If rba.rb.Checked = True Then
                 If Len(rba.s) <> 0 Then
