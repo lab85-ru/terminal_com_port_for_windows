@@ -559,6 +559,8 @@ Public Class Form1
                 gbTypeTxStr.Enabled = False
                 cbStrSend.Enabled = False
                 btFileSend.Enabled = False
+                btSendStringToHEX.Enabled = False
+                bt_Load_TXT_File.Enabled = False
             Else
                 Timer2.Enabled = False
                 btSendString.Text = SEND_STR_START
@@ -567,6 +569,8 @@ Public Class Form1
                 gbTypeTxStr.Enabled = True
                 cbStrSend.Enabled = True
                 btFileSend.Enabled = True
+                btSendStringToHEX.Enabled = True
+                bt_Load_TXT_File.Enabled = True
             End If
 
         Else
