@@ -120,7 +120,9 @@ Public Class Form1
 
     Const UART_RX_DATA_OUT_SIZE = 2048 ' максимальный размер буфера
     Dim uart_rx_data_out() As Byte ' промежуточный линейный буфер для приема массива из очереди (для вывода на экран/файл)
+    Const QUEUE_RX_SIZE = 16 * 1024 * 1024 ' Размер приемной очереди
     Dim queue_rx As queue_buf_t
+
 
     Enum print_log_paused_e ' Состояние - Поставить вывод в консоль на паузу
         print_on
@@ -129,6 +131,10 @@ Public Class Form1
     Dim flag_print_log_paused As print_log_paused_e = print_log_paused_e.print_on
     Dim txt_print_log_pause As String = "Пауза" '"Вывод - Пауза"
     Dim txt_print_log_run As String = "Продолжить" ' "Вывод - Продолжить"
+
+    Dim flag_store_rx_data_to_log_file As UInteger = 0 ' Флаг - сохранить содержимое приемного буфера в лог файл
+    Dim store_buf(QUEUE_RX_SIZE) As Byte ' промежуточный буфер для сохранения принятых данных в лог файл
+
 
 
     '--------------------------------------------------------------
@@ -256,6 +262,7 @@ Public Class Form1
             gbModemSet.Enabled = True
             btPrintLogPaused.Enabled = True
 
+
             com_port_set_modem_signal_dtr(port_modem_set_signal.dtr)
             com_port_set_modem_signal_rts(port_modem_set_signal.rts)
 
@@ -306,6 +313,7 @@ Public Class Form1
         gbKey.Enabled = False
         gbModemSet.Enabled = False
         btPrintLogPaused.Enabled = False
+        btStoreRxDataToFile.Enabled = False
 
         cbPorts.Enabled = True ' включаем выбор номера порта
 
@@ -364,8 +372,8 @@ Public Class Form1
 
     Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
 
-        queue_rx.len = 16 * 1024 * 1024
-        ReDim queue_rx.queue(queue_rx.len - 1)
+        queue_rx.len = QUEUE_RX_SIZE
+        ReDim queue_rx.queue(QUEUE_RX_SIZE - 1)
         ReDim uart_rx_data_in(UART_RX_DATA_IN_SIZE - 1)
         ReDim uart_rx_data_out(UART_RX_DATA_OUT_SIZE - 1)
 
@@ -480,6 +488,7 @@ Public Class Form1
         flag_print_log_paused = print_log_paused_e.print_on
 
         btPrintLogPaused.Enabled = False
+        btStoreRxDataToFile.Enabled = False
 
     End Sub
 
@@ -489,9 +498,11 @@ Public Class Form1
 
         If cbLogFile.Checked = True Then
             flag_write_log = True
+            btStoreRxDataToFile.Enabled = True
             fname = CreateLogFileName()
             f_log = New FileStream(fname, FileMode.CreateNew, FileAccess.Write)
         Else
+            btStoreRxDataToFile.Enabled = False
             flag_write_log = False
             f_log.Close()
         End If
@@ -1114,23 +1125,23 @@ Public Class Form1
     '--------------------------------------------------------------------------
     Sub Thread_com_port_rx()
         Dim res As Int32          ' != 0 ошибка
-        Dim din As UInt32         ' количество принятых данных
+        Dim rx_data_size As UInt32         ' количество принятых данных
 
         Do While flag_thread_stop = 0
             Thread.Sleep(1)
 
             ' ----- ПРИЕМ ДАННЫХ -----------
-            din = UART_RX_DATA_IN_SIZE
-            res = ComPortRead(uart_rx_data_in, din)
+            rx_data_size = UART_RX_DATA_IN_SIZE
+            res = ComPortRead(uart_rx_data_in, rx_data_size)
             If res <> 0 Then ' Произошла ошибка - закрываем порт
                 If InvokeRequired Then
                     BeginInvoke(New MethodInvoker(AddressOf GlobalComPortClose))
                 End If
             Else
-                If din <> 0 Then
+                If rx_data_size <> 0 Then
                     SyncLock lock_io_data
-                        If get_free_size_queue(queue_rx) > din Then
-                            push_data_queue(queue_rx, uart_rx_data_in, din)
+                        If get_free_size_queue(queue_rx) > rx_data_size Then
+                            push_data_queue(queue_rx, uart_rx_data_in, rx_data_size)
                         End If
                     End SyncLock
                 End If
@@ -1147,19 +1158,67 @@ Public Class Form1
     ' Таймер вывода - в окно принятого массива
     '--------------------------------------------------------------------------
     Private Sub Timer4_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer4.Tick
+        Dim rx_data_size As UInt32         ' количество пришедших данных
+
+        ' Количество данных в кольцевой очереди ?
+        SyncLock lock_io_data
+            rx_data_size = get_data_size_queue(queue_rx)
+        End SyncLock
+
+        ' Буфер пуст - выходим
+        If rx_data_size = 0 Then
+            Exit Sub
+        End If
+
+        ' Ветка - сохранение приемного кольцевого буфера в лог файл
+        ' извлекаем сразу все содержимое и все сохраняем в файл
+        If flag_store_rx_data_to_log_file = 1 Then
+            rx_counter_global = rx_counter_global + rx_data_size
+
+            SyncLock lock_io_data
+                pop_data_queue(queue_rx, store_buf, rx_data_size)
+            End SyncLock
+
+            ' Запись в лог файл Приема
+            If flag_write_log = True And rx_data_size > 0 Then
+                f_log.Write(store_buf, 0, rx_data_size)
+            End If
+
+            flag_store_rx_data_to_log_file = 0
+            Exit Sub
+        End If
+
         ' Если стоит флаг запрет вывода то не выводить в консоль
         ' Данные накапливаются в промежуточном 
         If flag_print_log_paused = print_log_paused_e.print_pause Then
             Exit Sub
         End If
 
-        decode_rx_com_port_data()
+        ' Ограничиваем длинну извлекаемых данных (из очереди) за 1 раз,
+        ' не более UART_RX_DATA_IN_SIZE байт (чтоб не тормазило при выводе и не вешало интерфейс)
+        If rx_data_size > UART_RX_DATA_OUT_SIZE Then
+            rx_data_size = UART_RX_DATA_OUT_SIZE
+        End If
+
+        ' Извлечени еданных из очереди
+        SyncLock lock_io_data
+            pop_data_queue(queue_rx, uart_rx_data_out, rx_data_size)
+        End SyncLock
+
+        ' Запись в лог файл Приема
+        If flag_write_log = True And rx_data_size > 0 Then
+            f_log.Write(uart_rx_data_out, 0, rx_data_size)
+        End If
+
+        rx_counter_global = rx_counter_global + rx_data_size
+
+        decode_rx_com_port_data(rx_data_size)
     End Sub
 
     '--------------------------------------------------------------------------
     ' Обработка и вывод принятых данных из СОМ порта
     '--------------------------------------------------------------------------
-    Sub decode_rx_com_port_data()
+    Sub decode_rx_com_port_data(ByVal rx_data_size As UInt32)
         Dim ub As Byte            ' принятый байт
         Dim s As String = ""      ' строка в виде НЕХ
         Dim s1 As String = ""     ' строка в виде БИН
@@ -1170,41 +1229,18 @@ Public Class Form1
         Dim l_n As Integer = 0    ' количество линий
         Dim l_n2 As Integer = 0   ' количество линий в строке (для расчета)
         Const LINES_MAX = 25 * 10 ' максимальное количество строк в техт боксе
-        Dim din As UInt32         ' количество пришедших данных
 
-        ' времы выполнения
+        ' время выполнения
         'Dim TStart As Date = Now
         'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & " ms" & vbCrLf)
         'tbLogTx.AppendText(Now.Subtract(TStart).TotalMilliseconds.ToString & "RX ms" & vbCrLf)
 
-        SyncLock lock_io_data
-            din = get_data_size_queue(queue_rx)
-            If din = 0 Then
-                Exit Sub
-            End If
-
-            ' Ограничиваем длинну извлекаемых данных (из очереди) за 1 раз,
-            ' не более UART_RX_DATA_IN_SIZE байт (чтоб не тормазило при выводе и не вешало интерфейс)
-            If din > UART_RX_DATA_OUT_SIZE Then
-                din = UART_RX_DATA_OUT_SIZE
-            End If
-            pop_data_queue(queue_rx, uart_rx_data_out, din)
-
-        End SyncLock
-
-        rx_counter_global = rx_counter_global + din
-
-        ' Запись в лог файл Приема
-        If flag_write_log = True And din > 0 Then
-            f_log.Write(uart_rx_data_out, 0, din)
-        End If
-
-        ' --------- ОБРАБОТКА ПРИНЯТЫХ БАННЫХ -----------------
+        ' --------- ОБРАБОТКА ПРИНЯТЫХ ДАННЫХ -----------------
         If cbPrintHex.Checked = True Then ' HEX -------------------------------------------------------------------------------
-            s_out = ConvArrayByteToHEX(uart_rx_data_out, din)
+            s_out = ConvArrayByteToHEX(uart_rx_data_out, rx_data_size)
 
         Else                               ' ASCII ------------------------------------------------------------------
-            For i = 0 To din - 1
+            For i = 0 To rx_data_size - 1
                 ub = uart_rx_data_out(i)
 
                 Select Case ub
@@ -1411,4 +1447,16 @@ Public Class Form1
 
     End Sub
 
+    ' Очистка буфера
+    Private Sub btClearRxQueue_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btClearRxQueue.Click
+        SyncLock lock_io_data
+            queue_rx.dout = 0
+            queue_rx.din = 0
+        End SyncLock
+    End Sub
+
+    ' выставить флаг - сохранить на диск содержимое приемного буфера
+    Private Sub btStoreRxDataToFile_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btStoreRxDataToFile.Click
+        flag_store_rx_data_to_log_file = 1
+    End Sub
 End Class

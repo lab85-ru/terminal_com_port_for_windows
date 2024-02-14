@@ -97,6 +97,8 @@ Partial Class Form1
         Me.cbComSignalDTR = New System.Windows.Forms.CheckBox
         Me.Timer4 = New System.Windows.Forms.Timer(Me.components)
         Me.Timer5 = New System.Windows.Forms.Timer(Me.components)
+        Me.btClearRxQueue = New System.Windows.Forms.Button
+        Me.btStoreRxDataToFile = New System.Windows.Forms.Button
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -159,6 +161,8 @@ Partial Class Form1
         '
         'gbRxLog
         '
+        Me.gbRxLog.Controls.Add(Me.btStoreRxDataToFile)
+        Me.gbRxLog.Controls.Add(Me.btClearRxQueue)
         Me.gbRxLog.Controls.Add(Me.btPrintLogPaused)
         Me.gbRxLog.Controls.Add(Me.btClearRxLog)
         Me.gbRxLog.Controls.Add(Me.tbLogRx)
@@ -851,6 +855,27 @@ Partial Class Form1
         Me.Timer5.Enabled = True
         Me.Timer5.Interval = 1000
         '
+        'btClearRxQueue
+        '
+        Me.btClearRxQueue.Location = New System.Drawing.Point(456, 0)
+        Me.btClearRxQueue.Name = "btClearRxQueue"
+        Me.btClearRxQueue.Size = New System.Drawing.Size(124, 23)
+        Me.btClearRxQueue.TabIndex = 4
+        Me.btClearRxQueue.Text = "Очистка RX буфера"
+        Me.ToolTip1.SetToolTip(Me.btClearRxQueue, "Очистка приемного буфера от данных. Если данных много, вывод на экран будет долги" & _
+                "м... чтобы не ждать производим очистку.")
+        Me.btClearRxQueue.UseVisualStyleBackColor = True
+        '
+        'btStoreRxDataToFile
+        '
+        Me.btStoreRxDataToFile.Location = New System.Drawing.Point(254, 0)
+        Me.btStoreRxDataToFile.Name = "btStoreRxDataToFile"
+        Me.btStoreRxDataToFile.Size = New System.Drawing.Size(168, 23)
+        Me.btStoreRxDataToFile.TabIndex = 5
+        Me.btStoreRxDataToFile.Text = "Сохранить RX буфер на диск."
+        Me.ToolTip1.SetToolTip(Me.btStoreRxDataToFile, "Сохранить принятые данные в лог файл, в консоль НЕ ВЫВОДИТЬ.")
+        Me.btStoreRxDataToFile.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -980,5 +1005,7 @@ Partial Class Form1
     Friend WithEvents btPrintLogPaused As System.Windows.Forms.Button
     Friend WithEvents Timer5 As System.Windows.Forms.Timer
     Friend WithEvents rbAddStrEnd0A As System.Windows.Forms.RadioButton
+    Friend WithEvents btClearRxQueue As System.Windows.Forms.Button
+    Friend WithEvents btStoreRxDataToFile As System.Windows.Forms.Button
 
 End Class
