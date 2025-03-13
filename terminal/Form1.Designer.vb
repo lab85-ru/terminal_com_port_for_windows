@@ -29,6 +29,8 @@ Partial Class Form1
         Me.btPOpen = New System.Windows.Forms.Button
         Me.btScanComPort = New System.Windows.Forms.Button
         Me.gbRxLog = New System.Windows.Forms.GroupBox
+        Me.btStoreRxDataToFile = New System.Windows.Forms.Button
+        Me.btClearRxQueue = New System.Windows.Forms.Button
         Me.btPrintLogPaused = New System.Windows.Forms.Button
         Me.btClearRxLog = New System.Windows.Forms.Button
         Me.tbLogRx = New System.Windows.Forms.TextBox
@@ -97,8 +99,6 @@ Partial Class Form1
         Me.cbComSignalDTR = New System.Windows.Forms.CheckBox
         Me.Timer4 = New System.Windows.Forms.Timer(Me.components)
         Me.Timer5 = New System.Windows.Forms.Timer(Me.components)
-        Me.btClearRxQueue = New System.Windows.Forms.Button
-        Me.btStoreRxDataToFile = New System.Windows.Forms.Button
         Me.gbPort.SuspendLayout()
         Me.gbRxLog.SuspendLayout()
         Me.gbSetPortSpeed.SuspendLayout()
@@ -172,6 +172,27 @@ Partial Class Form1
         Me.gbRxLog.TabIndex = 1
         Me.gbRxLog.TabStop = False
         Me.gbRxLog.Text = "Прием"
+        '
+        'btStoreRxDataToFile
+        '
+        Me.btStoreRxDataToFile.Location = New System.Drawing.Point(254, 0)
+        Me.btStoreRxDataToFile.Name = "btStoreRxDataToFile"
+        Me.btStoreRxDataToFile.Size = New System.Drawing.Size(168, 23)
+        Me.btStoreRxDataToFile.TabIndex = 5
+        Me.btStoreRxDataToFile.Text = "Сохранить RX буфер на диск."
+        Me.ToolTip1.SetToolTip(Me.btStoreRxDataToFile, "Сохранить принятые данные в лог файл, в консоль НЕ ВЫВОДИТЬ.")
+        Me.btStoreRxDataToFile.UseVisualStyleBackColor = True
+        '
+        'btClearRxQueue
+        '
+        Me.btClearRxQueue.Location = New System.Drawing.Point(456, 0)
+        Me.btClearRxQueue.Name = "btClearRxQueue"
+        Me.btClearRxQueue.Size = New System.Drawing.Size(124, 23)
+        Me.btClearRxQueue.TabIndex = 4
+        Me.btClearRxQueue.Text = "Очистка RX буфера"
+        Me.ToolTip1.SetToolTip(Me.btClearRxQueue, "Очистка приемного буфера от данных. Если данных много, вывод на экран будет долги" & _
+                "м... чтобы не ждать производим очистку.")
+        Me.btClearRxQueue.UseVisualStyleBackColor = True
         '
         'btPrintLogPaused
         '
@@ -311,7 +332,7 @@ Partial Class Form1
         Me.tbPortSpeedNumer.Name = "tbPortSpeedNumer"
         Me.tbPortSpeedNumer.Size = New System.Drawing.Size(65, 20)
         Me.tbPortSpeedNumer.TabIndex = 0
-        Me.tbPortSpeedNumer.Text = "0"
+        Me.tbPortSpeedNumer.Text = "230400"
         Me.tbPortSpeedNumer.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'gbSetPortParity
@@ -855,27 +876,6 @@ Partial Class Form1
         Me.Timer5.Enabled = True
         Me.Timer5.Interval = 1000
         '
-        'btClearRxQueue
-        '
-        Me.btClearRxQueue.Location = New System.Drawing.Point(456, 0)
-        Me.btClearRxQueue.Name = "btClearRxQueue"
-        Me.btClearRxQueue.Size = New System.Drawing.Size(124, 23)
-        Me.btClearRxQueue.TabIndex = 4
-        Me.btClearRxQueue.Text = "Очистка RX буфера"
-        Me.ToolTip1.SetToolTip(Me.btClearRxQueue, "Очистка приемного буфера от данных. Если данных много, вывод на экран будет долги" & _
-                "м... чтобы не ждать производим очистку.")
-        Me.btClearRxQueue.UseVisualStyleBackColor = True
-        '
-        'btStoreRxDataToFile
-        '
-        Me.btStoreRxDataToFile.Location = New System.Drawing.Point(254, 0)
-        Me.btStoreRxDataToFile.Name = "btStoreRxDataToFile"
-        Me.btStoreRxDataToFile.Size = New System.Drawing.Size(168, 23)
-        Me.btStoreRxDataToFile.TabIndex = 5
-        Me.btStoreRxDataToFile.Text = "Сохранить RX буфер на диск."
-        Me.ToolTip1.SetToolTip(Me.btStoreRxDataToFile, "Сохранить принятые данные в лог файл, в консоль НЕ ВЫВОДИТЬ.")
-        Me.btStoreRxDataToFile.UseVisualStyleBackColor = True
-        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -899,8 +899,8 @@ Partial Class Form1
         Me.MaximizeBox = False
         Me.Name = "Form1"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "COM port Terminal v1.6.1  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
-            "2024."
+        Me.Text = "COM port Terminal v1.6.2  Sviridov Georgy email: sgot@inbox.ru aka info@lab85.ru " & _
+            "2025."
         Me.gbPort.ResumeLayout(False)
         Me.gbRxLog.ResumeLayout(False)
         Me.gbRxLog.PerformLayout()
